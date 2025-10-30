@@ -110,25 +110,32 @@ export default function PdfExtractor() {
 
   const handleExtractData = () => {
     if (!file) return;
-
+  
     setError(null);
     setData(null);
-
-    startTransition(async () => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = async () => {
-        const pdfDataUri = reader.result as string;
+  
+    const processFile = async (fileToProcess: File) => {
+      try {
+        const pdfDataUri = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(fileToProcess);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = (error) => reject(error);
+        });
+  
         const result = await extractDataAction({ pdfDataUri });
         if (result.error) {
           setError(result.error);
         } else {
           setData(result.data);
         }
-      };
-      reader.onerror = () => {
+      } catch (e) {
         setError('No se pudo leer el archivo.');
-      };
+      }
+    };
+  
+    startTransition(() => {
+      processFile(file);
     });
   };
   
@@ -136,20 +143,26 @@ export default function PdfExtractor() {
     const formattedNumeroFactura = formatNumeroFactura(extractedData.numeroFactura) || extractedData.numeroFactura;
     return `Favor su ayuda aceptando la anulación en el SRI de la siguiente retención:
 
-Número de Retención: ${extractedData.numeroRetencion}
-Autorización: ${extractedData.autorizacion}
-Razón Social: ${extractedData.razonSocial}
-RUC Cliente: ${extractedData.rucCliente}
-Número de Factura que aplica: ${formattedNumeroFactura}`;
+**Número de Retención:** ${extractedData.numeroRetencion}
+**Autorización:** ${extractedData.autorizacion}
+**Razón Social:** ${extractedData.razonSocial}
+**RUC Cliente:** ${extractedData.rucCliente}
+**Número de Factura que aplica:** ${formattedNumeroFactura}`;
   };
 
   const handleCopyAll = () => {
     if (!data) return;
     const formattedData = formatDataForClipboard(data);
-    navigator.clipboard.writeText(formattedData);
-    toast({
-      title: "Copiado al Portapapeles",
-      description: "Todos los datos extraídos han sido copiados.",
+    
+    // To support markdown-like bold text in clipboard
+    const blob = new Blob([formattedData], { type: 'text/plain' });
+    const clipboardItem = new ClipboardItem({ 'text/plain': blob });
+    
+    navigator.clipboard.write([clipboardItem]).then(() => {
+      toast({
+        title: "Copiado al Portapapeles",
+        description: "Todos los datos extraídos han sido copiados.",
+      });
     });
   };
 
@@ -157,7 +170,9 @@ Número de Factura que aplica: ${formattedNumeroFactura}`;
     if (!data) return;
     const formattedData = formatDataForClipboard(data);
     const subject = "Solicitud anulación retención";
-    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(formattedData)}`;
+    // For email, we will use newline characters instead of markdown for bolding.
+    const emailBody = formattedData.replace(/\*\*/g, '');
+    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
     window.location.href = mailtoLink;
   };
 
