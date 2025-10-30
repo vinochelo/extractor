@@ -51,9 +51,9 @@ export default function PdfExtractor() {
   const handleFileChange = (selectedFile: File | null) => {
     if (selectedFile) {
         if (selectedFile.type === 'application/pdf') {
-            setFile(selectedFile);
-            setError(null);
             setData(null);
+            setError(null);
+            setFile(selectedFile);
             handleExtractData(selectedFile);
         } else {
             setFile(null);
@@ -117,9 +117,9 @@ export default function PdfExtractor() {
   const handleExtractData = (currentFile: File) => {
     if (!currentFile) return;
 
+    setIsReadingFile(true);
     setError(null);
     setData(null);
-    setIsReadingFile(true);
 
     const reader = new FileReader();
     reader.readAsDataURL(currentFile);
@@ -147,11 +147,11 @@ export default function PdfExtractor() {
     const formattedNumeroFactura = formatNumeroFactura(extractedData.numeroFactura) || extractedData.numeroFactura;
     return `Favor su ayuda aceptando en el SRI la anulación de la siguiente retención:
 
-**Número de Retención:** ${extractedData.numeroRetencion}
-**Autorización:** ${extractedData.autorizacion}
-**Razón Social:** ${extractedData.razonSocial}
-**RUC Cliente:** ${extractedData.rucCliente}
-**Número de Factura que aplica:** ${formattedNumeroFactura}`;
+Número de Retención: ${extractedData.numeroRetencion}
+Autorización: ${extractedData.autorizacion}
+Razón Social: ${extractedData.razonSocial}
+RUC Cliente: ${extractedData.rucCliente}
+Número de Factura que aplica: ${formattedNumeroFactura}`;
   };
 
   const formatDataForEmail = (extractedData: ExtractionOutput): string => {
