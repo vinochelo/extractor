@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useTransition } from 'react';
+import { useState, useRef, useTransition } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
 import { UploadCloud, FileText, XCircle, Loader2, ClipboardCopy, Mail, Check, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -113,38 +113,33 @@ export default function PdfExtractor() {
     return digits;
   }
 
-  const handleExtractData = async (currentFile: File) => {
+  const handleExtractData = (currentFile: File) => {
     if (!currentFile) return;
-  
+
     setError(null);
-    setData(null); 
+    setData(null);
     setIsReadingFile(true);
-  
-    let pdfDataUri: string;
-    try {
-      pdfDataUri = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(currentFile);
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = (error) => reject(error);
+
+    const reader = new FileReader();
+    reader.readAsDataURL(currentFile);
+    reader.onload = () => {
+      const pdfDataUri = reader.result as string;
+      setIsReadingFile(false);
+      startTransition(async () => {
+        const result = await extractDataAction({ pdfDataUri });
+        if (result.error) {
+          setError(result.error);
+          setData(null);
+        } else {
+          setData(result.data);
+          setError(null);
+        }
       });
-    } catch (e) {
+    };
+    reader.onerror = () => {
       setError('No se pudo leer el archivo.');
       setIsReadingFile(false);
-      return;
-    }
-    
-    setIsReadingFile(false);
-    startTransition(async () => {
-      const result = await extractDataAction({ pdfDataUri });
-      if (result.error) {
-        setError(result.error);
-        setData(null);
-      } else {
-        setData(result.data);
-        setError(null);
-      }
-    });
+    };
   };
   
   const formatDataForClipboard = (extractedData: ExtractionOutput): string => {
@@ -173,8 +168,8 @@ Número de Factura que aplica: ${formattedNumeroFactura}`;
   const handleEmail = () => {
     if (!data) return;
     const formattedData = formatDataForClipboard(data);
-    const subject = "Solicitud anulación retención";
-    const emailBody = formattedData.replace(/\*\*/g, '');
+    const subject = "Anulación retención";
+    const emailBody = formattedData;
     const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
     window.location.href = mailtoLink;
   };
