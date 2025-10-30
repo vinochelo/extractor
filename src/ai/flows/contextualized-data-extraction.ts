@@ -37,20 +37,8 @@ const extractionPrompt = ai.definePrompt({
   name: 'extractionPrompt',
   input: {schema: ExtractionInputSchema},
   output: {schema: ExtractionOutputSchema},
-  prompt: `You are an expert data extraction specialist.
-  Your goal is to extract specific information from a PDF document, understanding that it is a 'retencion' (retention document).
-  Extract the following information:
-  - numero de retencion (retention number)
-  - autorizacion (authorization number)
-  - razon social (company name of the client)
-  - ruc del cliente (RUC - tax ID - of the client)
-  - numero de factura que aplica (invoice number that applies)
-
-  Here is the document content:
-  {{media url=pdfDataUri}}
-
-  Ensure the extracted data is accurate and corresponds to the correct fields.
-`,
+  prompt: `You are an expert data extractor. From the provided 'retencion' document, extract only the following fields: numero de retencion, autorizacion, razon social of the client, ruc of the client, and the applicable numero de factura.
+Document: {{media url=pdfDataUri}}`,
 });
 
 const extractionFlow = ai.defineFlow(

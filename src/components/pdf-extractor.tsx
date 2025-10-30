@@ -52,7 +52,7 @@ export default function PdfExtractor() {
   const handleFileChange = (selectedFile: File | null) => {
     if (selectedFile && selectedFile.type === 'application/pdf') {
       setFile(selectedFile);
-      setData(null);
+      setData(null); 
       setError(null);
       handleExtractData(selectedFile);
     } else {
@@ -115,11 +115,11 @@ export default function PdfExtractor() {
 
   const handleExtractData = async (currentFile: File) => {
     if (!currentFile) return;
-
+  
     setError(null);
-    setData(null);
+    setData(null); 
     setIsReadingFile(true);
-
+  
     let pdfDataUri: string;
     try {
       pdfDataUri = await new Promise<string>((resolve, reject) => {
@@ -135,7 +135,6 @@ export default function PdfExtractor() {
     }
     
     setIsReadingFile(false);
-
     startTransition(async () => {
       const result = await extractDataAction({ pdfDataUri });
       if (result.error) {
@@ -152,11 +151,11 @@ export default function PdfExtractor() {
     const formattedNumeroFactura = formatNumeroFactura(extractedData.numeroFactura) || extractedData.numeroFactura;
     return `Favor su ayuda aceptando en el SRI la anulación de la siguiente retención:
 
-**Número de Retención:** ${extractedData.numeroRetencion}
-**Autorización:** ${extractedData.autorizacion}
-**Razón Social:** ${extractedData.razonSocial}
-**RUC Cliente:** ${extractedData.rucCliente}
-**Número de Factura que aplica:** ${formattedNumeroFactura}`;
+Número de Retención: ${extractedData.numeroRetencion}
+Autorización: ${extractedData.autorizacion}
+Razón Social: ${extractedData.razonSocial}
+RUC Cliente: ${extractedData.rucCliente}
+Número de Factura que aplica: ${formattedNumeroFactura}`;
   };
 
   const handleCopyAll = () => {
@@ -229,18 +228,6 @@ export default function PdfExtractor() {
             </div>
           )}
         </CardContent>
-        <CardFooter className="flex justify-center p-6 border-t">
-          <Button onClick={() => file && handleExtractData(file)} disabled={!file || isLoading} size="lg">
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Extrayendo...
-              </>
-            ) : (
-              'Extraer Datos'
-            )}
-          </Button>
-        </CardFooter>
       </Card>
       
       {error && (
@@ -276,6 +263,16 @@ export default function PdfExtractor() {
           </CardFooter>
         </Card>
       )}
+
+      {isPending && !data && (
+         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+           <div className="flex items-center gap-4 bg-background p-6 rounded-lg shadow-xl">
+             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+             <p className="text-lg font-medium">Extrayendo datos...</p>
+           </div>
+         </div>
+       )}
+
     </div>
   );
 }
