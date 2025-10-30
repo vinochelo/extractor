@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useTransition } from 'react';
-import type { ChangeEvent, DragEvent } from 'react';
+import { useState, useRef, useTransition, ChangeEvent, DragEvent } from 'react';
 import { UploadCloud, FileText, XCircle, Loader2, ClipboardCopy, Mail, Check, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,15 +49,17 @@ export default function PdfExtractor() {
   const { toast } = useToast();
 
   const handleFileChange = (selectedFile: File | null) => {
-    if (selectedFile && selectedFile.type === 'application/pdf') {
-      setFile(selectedFile);
-      setData(null); 
-      setError(null);
-      handleExtractData(selectedFile);
-    } else {
-      setFile(null);
-      setData(null);
-      setError(selectedFile ? 'Por favor, selecciona un archivo PDF válido.' : null);
+    if (selectedFile) {
+        if (selectedFile.type === 'application/pdf') {
+            setFile(selectedFile);
+            setError(null);
+            setData(null);
+            handleExtractData(selectedFile);
+        } else {
+            setFile(null);
+            setData(null);
+            setError('Por favor, selecciona un archivo PDF válido.');
+        }
     }
   };
 
@@ -102,7 +103,7 @@ export default function PdfExtractor() {
   const formatNumeroFactura = (numero?: string) => {
     if (!numero) return undefined;
     
-    const digits = numero.replace(/-/g, '');
+    const digits = numero.replace(/[^0-9]/g, '');
 
     if (digits.length > 6) {
       return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
@@ -122,19 +123,19 @@ export default function PdfExtractor() {
 
     const reader = new FileReader();
     reader.readAsDataURL(currentFile);
-    reader.onload = () => {
-      const pdfDataUri = reader.result as string;
-      setIsReadingFile(false);
-      startTransition(async () => {
-        const result = await extractDataAction({ pdfDataUri });
-        if (result.error) {
-          setError(result.error);
-          setData(null);
-        } else {
-          setData(result.data);
-          setError(null);
-        }
-      });
+    reader.onloadend = () => {
+        const pdfDataUri = reader.result as string;
+        setIsReadingFile(false);
+        startTransition(async () => {
+            const result = await extractDataAction({ pdfDataUri });
+            if (result.error) {
+                setError(result.error);
+                setData(null);
+            } else {
+                setData(result.data);
+                setError(null);
+            }
+        });
     };
     reader.onerror = () => {
       setError('No se pudo leer el archivo.');
@@ -153,6 +154,17 @@ RUC Cliente: ${extractedData.rucCliente}
 Número de Factura que aplica: ${formattedNumeroFactura}`;
   };
 
+  const formatDataForEmail = (extractedData: ExtractionOutput): string => {
+    const formattedNumeroFactura = formatNumeroFactura(extractedData.numeroFactura) || extractedData.numeroFactura;
+    return `<p>Favor su ayuda aceptando en el SRI la anulación de la siguiente retención:</p>
+<br>
+<p><b>Número de Retención:</b> ${extractedData.numeroRetencion}</p>
+<p><b>Autorización:</b> ${extractedData.autorizacion}</p>
+<p><b>Razón Social:</b> ${extractedData.razonSocial}</p>
+<p><b>RUC Cliente:</b> ${extractedData.rucCliente}</p>
+<p><b>Número de Factura que aplica:</b> ${formattedNumeroFactura}</p>`;
+  };
+
   const handleCopyAll = () => {
     if (!data) return;
     const formattedData = formatDataForClipboard(data);
@@ -167,9 +179,8 @@ Número de Factura que aplica: ${formattedNumeroFactura}`;
 
   const handleEmail = () => {
     if (!data) return;
-    const formattedData = formatDataForClipboard(data);
     const subject = "Anulación retención";
-    const emailBody = formattedData;
+    const emailBody = formatDataForEmail(data);
     const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
     window.location.href = mailtoLink;
   };
@@ -259,7 +270,7 @@ Número de Factura que aplica: ${formattedNumeroFactura}`;
         </Card>
       )}
 
-      {isPending && !data && (
+      {isPending && (
          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
            <div className="flex items-center gap-4 bg-background p-6 rounded-lg shadow-xl">
              <Loader2 className="h-8 w-8 animate-spin text-primary" />
