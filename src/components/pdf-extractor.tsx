@@ -49,20 +49,22 @@ export default function PdfExtractor() {
   const { toast } = useToast();
 
   const handleFileChange = (selectedFile: File | null) => {
-    setData(null);
-    setError(null);
     if (selectedFile && selectedFile.type === 'application/pdf') {
       setFile(selectedFile);
+      setData(null);
+      setError(null);
     } else {
       setFile(null);
-      if (selectedFile) { // only show error if a file was selected and it was invalid
-        setError('Por favor, selecciona un archivo PDF válido.');
-      }
+      setData(null);
+      setError(selectedFile ? 'Por favor, selecciona un archivo PDF válido.' : null);
     }
   };
 
   const onFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     handleFileChange(e.target.files?.[0] || null);
+    if(e.target) {
+      e.target.value = '';
+    }
   };
 
   const onDrop = (e: DragEvent<HTMLDivElement>) => {
@@ -108,34 +110,34 @@ export default function PdfExtractor() {
     return digits;
   }
 
-  const handleExtractData = () => {
+  const handleExtractData = async () => {
     if (!file) return;
   
     setError(null);
     setData(null);
   
-    const processFile = async (fileToProcess: File) => {
-      try {
-        const pdfDataUri = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(fileToProcess);
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = (error) => reject(error);
-        });
+    let pdfDataUri;
+    try {
+      pdfDataUri = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+      });
+    } catch (e) {
+      setError('No se pudo leer el archivo.');
+      return;
+    }
   
-        const result = await extractDataAction({ pdfDataUri });
-        if (result.error) {
-          setError(result.error);
-        } else {
-          setData(result.data);
-        }
-      } catch (e) {
-        setError('No se pudo leer el archivo.');
+    startTransition(async () => {
+      const result = await extractDataAction({ pdfDataUri });
+      if (result.error) {
+        setError(result.error);
+        setData(null);
+      } else {
+        setData(result.data);
+        setError(null);
       }
-    };
-  
-    startTransition(() => {
-      processFile(file);
     });
   };
   
