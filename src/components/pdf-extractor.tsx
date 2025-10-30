@@ -147,22 +147,22 @@ export default function PdfExtractor() {
     const formattedNumeroFactura = formatNumeroFactura(extractedData.numeroFactura) || extractedData.numeroFactura;
     return `Favor su ayuda aceptando en el SRI la anulación de la siguiente retención:
 
+**Número de Retención:** ${extractedData.numeroRetencion}
+**Autorización:** ${extractedData.autorizacion}
+**Razón Social:** ${extractedData.razonSocial}
+**RUC Cliente:** ${extractedData.rucCliente}
+**Número de Factura que aplica:** ${formattedNumeroFactura}`;
+  };
+
+  const formatDataForEmail = (extractedData: ExtractionOutput): string => {
+    const formattedNumeroFactura = formatNumeroFactura(extractedData.numeroFactura) || extractedData.numeroFactura;
+    return `Favor su ayuda aceptando en el SRI la anulación de la siguiente retención:
+
 Número de Retención: ${extractedData.numeroRetencion}
 Autorización: ${extractedData.autorizacion}
 Razón Social: ${extractedData.razonSocial}
 RUC Cliente: ${extractedData.rucCliente}
 Número de Factura que aplica: ${formattedNumeroFactura}`;
-  };
-
-  const formatDataForEmail = (extractedData: ExtractionOutput): string => {
-    const formattedNumeroFactura = formatNumeroFactura(extractedData.numeroFactura) || extractedData.numeroFactura;
-    return `<p>Favor su ayuda aceptando en el SRI la anulación de la siguiente retención:</p>
-<br>
-<p><b>Número de Retención:</b> ${extractedData.numeroRetencion}</p>
-<p><b>Autorización:</b> ${extractedData.autorizacion}</p>
-<p><b>Razón Social:</b> ${extractedData.razonSocial}</p>
-<p><b>RUC Cliente:</b> ${extractedData.rucCliente}</p>
-<p><b>Número de Factura que aplica:</b> ${formattedNumeroFactura}</p>`;
   };
 
   const handleCopyAll = () => {
