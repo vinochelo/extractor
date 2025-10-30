@@ -25,7 +25,7 @@ const ExtractDataFromPdfOutputSchema = z.object({
   autorizacion: z.string().describe('The authorization number.'),
   razonSocial: z.string().describe('The business name of the client.'),
   rucCliente: z.string().describe('The RUC of the client.'),
-  numeroFactura: z.string().describe('The invoice number.'),
+  numeroFactura: z.string().describe('El número de factura que aplica.'),
 });
 export type ExtractDataFromPdfOutput = z.infer<typeof ExtractDataFromPdfOutputSchema>;
 
@@ -44,7 +44,7 @@ You will use this information to extract the following fields from the document:
 - autorizacion
 - razon social
 - ruc del cliente
-- numero de factura
+- numero de factura que aplica
 
 Use the following document as the primary source of information.
 

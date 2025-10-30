@@ -25,7 +25,7 @@ const ExtractionOutputSchema = z.object({
   autorizacion: z.string().describe('The authorization number.'),
   razonSocial: z.string().describe('The company name of the client.'),
   rucCliente: z.string().describe('The RUC (tax ID) of the client.'),
-  numeroFactura: z.string().describe('The invoice number.'),
+  numeroFactura: z.string().describe('El número de factura que aplica.'),
 });
 export type ExtractionOutput = z.infer<typeof ExtractionOutputSchema>;
 
@@ -44,7 +44,7 @@ const extractionPrompt = ai.definePrompt({
   - autorizacion (authorization number)
   - razon social (company name of the client)
   - ruc del cliente (RUC - tax ID - of the client)
-  - numero de factura (invoice number)
+  - numero de factura que aplica (invoice number that applies)
 
   Here is the document content:
   {{media url=pdfDataUri}}

@@ -20,7 +20,7 @@ const DataField = ({ label, value }: { label: string; value: string | undefined 
     navigator.clipboard.writeText(value);
     setCopied(true);
     toast({
-      description: `"${label}" copied to clipboard.`,
+      description: `"${label}" copiado al portapapeles.`,
     });
     setTimeout(() => setCopied(false), 2000);
   };
@@ -30,7 +30,7 @@ const DataField = ({ label, value }: { label: string; value: string | undefined 
       <p className="text-sm font-medium text-muted-foreground">{label}</p>
       <div className="flex items-center justify-between gap-2">
         <p className="text-lg font-semibold break-words">{value || '...'}</p>
-        <Button variant="ghost" size="icon" onClick={onCopy} disabled={!value} aria-label={`Copy ${label}`}>
+        <Button variant="ghost" size="icon" onClick={onCopy} disabled={!value} aria-label={`Copiar ${label}`}>
           {copied ? <Check className="h-4 w-4" /> : <ClipboardCopy className="h-4 w-4" />}
         </Button>
       </div>
@@ -54,7 +54,7 @@ export default function PdfExtractor() {
       setError(null);
       setData(null);
     } else {
-      setError('Please select a valid PDF file.');
+      setError('Por favor, selecciona un archivo PDF válido.');
       setFile(null);
     }
   };
@@ -110,7 +110,7 @@ export default function PdfExtractor() {
         }
       };
       reader.onerror = () => {
-        setError('Failed to read the file.');
+        setError('No se pudo leer el archivo.');
       };
     });
   };
@@ -120,7 +120,7 @@ export default function PdfExtractor() {
 Autorización: ${extractedData.autorizacion}
 Razón Social: ${extractedData.razonSocial}
 RUC Cliente: ${extractedData.rucCliente}
-Número de Factura: ${extractedData.numeroFactura}`;
+Número de Factura que aplica: ${extractedData.numeroFactura}`;
   };
 
   const handleCopyAll = () => {
@@ -128,8 +128,8 @@ Número de Factura: ${extractedData.numeroFactura}`;
     const formattedData = formatDataForClipboard(data);
     navigator.clipboard.writeText(formattedData);
     toast({
-      title: "Copied to Clipboard",
-      description: "All extracted data has been copied.",
+      title: "Copiado al Portapapeles",
+      description: "Todos los datos extraídos han sido copiados.",
     });
   };
 
@@ -144,9 +144,9 @@ Número de Factura: ${extractedData.numeroFactura}`;
   return (
     <div className="space-y-8">
       <header className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight">PDF Data Extractor</h1>
+        <h1 className="text-4xl font-bold tracking-tight">Extractor de Datos de PDF</h1>
         <p className="mt-2 text-lg text-muted-foreground">
-          Upload a 'retención' PDF to automatically extract key information.
+          Sube un PDF de 'retención' para extraer automáticamente información clave.
         </p>
       </header>
 
@@ -164,7 +164,7 @@ Número de Factura: ${extractedData.numeroFactura}`;
           >
             <UploadCloud className="w-12 h-12 text-muted-foreground" />
             <p className="mt-4 text-center text-muted-foreground">
-              <span className="font-semibold text-primary">Click to upload</span> or drag and drop a PDF
+              <span className="font-semibold text-primary">Haz clic para subir</span> o arrastra y suelta un PDF
             </p>
             <input
               ref={fileInputRef}
@@ -192,10 +192,10 @@ Número de Factura: ${extractedData.numeroFactura}`;
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Extracting...
+                Extrayendo...
               </>
             ) : (
-              'Extract Data'
+              'Extraer Datos'
             )}
           </Button>
         </CardFooter>
@@ -204,7 +204,7 @@ Número de Factura: ${extractedData.numeroFactura}`;
       {error && (
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Extraction Failed</AlertTitle>
+          <AlertTitle>Falló la Extracción</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -212,8 +212,8 @@ Número de Factura: ${extractedData.numeroFactura}`;
       {(isPending || data) && (
         <Card className={cn("transition-opacity duration-500", isPending && !data ? "opacity-50" : "opacity-100")}>
           <CardHeader>
-            <CardTitle>Extracted Information</CardTitle>
-            <CardDescription>Review the data extracted from your document.</CardDescription>
+            <CardTitle>Información Extraída</CardTitle>
+            <CardDescription>Revisa los datos extraídos de tu documento.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
@@ -221,15 +221,15 @@ Número de Factura: ${extractedData.numeroFactura}`;
               <DataField label="Autorización" value={data?.autorizacion} />
               <DataField label="Razón Social" value={data?.razonSocial} />
               <DataField label="RUC Cliente" value={data?.rucCliente} />
-              <DataField label="Número de Factura" value={data?.numeroFactura} />
+              <DataField label="Número de Factura que aplica" value={data?.numeroFactura} />
             </div>
           </CardContent>
           <CardFooter className="flex flex-wrap gap-2 justify-end border-t p-6">
             <Button variant="outline" onClick={handleCopyAll} disabled={!data || isPending}>
-              <ClipboardCopy className="mr-2 h-4 w-4" /> Copy All
+              <ClipboardCopy className="mr-2 h-4 w-4" /> Copiar Todo
             </Button>
             <Button variant="default" className="bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleEmail} disabled={!data || isPending}>
-              <Mail className="mr-2 h-4 w-4" /> Share via Email
+              <Mail className="mr-2 h-4 w-4" /> Compartir por Email
             </Button>
           </CardFooter>
         </Card>
