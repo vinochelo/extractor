@@ -138,7 +138,7 @@ Número de Factura que aplica: ${extractedData.numeroFactura}`;
   const handleEmail = () => {
     if (!data) return;
     const formattedData = formatDataForClipboard(data);
-    const subject = "Información de Retención Extraída";
+    const subject = "Solicitud anulación retención";
     const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(formattedData)}`;
     window.location.href = mailtoLink;
   };
