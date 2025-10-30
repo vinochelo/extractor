@@ -116,7 +116,9 @@ export default function PdfExtractor() {
   };
   
   const formatDataForClipboard = (extractedData: ExtractionOutput): string => {
-    return `Número de Retención: ${extractedData.numeroRetencion}
+    return `Favor su ayuda aceptando la anulación en el SRI de la siguiente retención:
+
+Número de Retención: ${extractedData.numeroRetencion}
 Autorización: ${extractedData.autorizacion}
 Razón Social: ${extractedData.razonSocial}
 RUC Cliente: ${extractedData.rucCliente}
