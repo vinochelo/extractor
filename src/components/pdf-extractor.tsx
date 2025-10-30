@@ -44,6 +44,7 @@ export default function PdfExtractor() {
   const [data, setData] = useState<ExtractionOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [isReadingFile, setIsReadingFile] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -53,6 +54,7 @@ export default function PdfExtractor() {
       setFile(selectedFile);
       setData(null);
       setError(null);
+      handleExtractData(selectedFile);
     } else {
       setFile(null);
       setData(null);
@@ -61,7 +63,8 @@ export default function PdfExtractor() {
   };
 
   const onFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    handleFileChange(e.target.files?.[0] || null);
+    const selectedFile = e.target.files?.[0] || null;
+    handleFileChange(selectedFile);
     if(e.target) {
       e.target.value = '';
     }
@@ -71,7 +74,8 @@ export default function PdfExtractor() {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    handleFileChange(e.dataTransfer.files?.[0] || null);
+    const selectedFile = e.dataTransfer.files?.[0] || null;
+    handleFileChange(selectedFile);
   };
   
   const onDragOver = (e: DragEvent<HTMLDivElement>) => {
@@ -98,7 +102,6 @@ export default function PdfExtractor() {
   const formatNumeroFactura = (numero?: string) => {
     if (!numero) return undefined;
     
-    // Remove any existing hyphens to handle re-extraction
     const digits = numero.replace(/-/g, '');
 
     if (digits.length > 6) {
@@ -110,25 +113,29 @@ export default function PdfExtractor() {
     return digits;
   }
 
-  const handleExtractData = async () => {
-    if (!file) return;
-  
+  const handleExtractData = async (currentFile: File) => {
+    if (!currentFile) return;
+
     setError(null);
     setData(null);
-  
-    let pdfDataUri;
+    setIsReadingFile(true);
+
+    let pdfDataUri: string;
     try {
       pdfDataUri = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(currentFile);
         reader.onload = () => resolve(reader.result as string);
         reader.onerror = (error) => reject(error);
       });
     } catch (e) {
       setError('No se pudo leer el archivo.');
+      setIsReadingFile(false);
       return;
     }
-  
+    
+    setIsReadingFile(false);
+
     startTransition(async () => {
       const result = await extractDataAction({ pdfDataUri });
       if (result.error) {
@@ -143,7 +150,7 @@ export default function PdfExtractor() {
   
   const formatDataForClipboard = (extractedData: ExtractionOutput): string => {
     const formattedNumeroFactura = formatNumeroFactura(extractedData.numeroFactura) || extractedData.numeroFactura;
-    return `Favor su ayuda aceptando la anulación en el SRI de la siguiente retención:
+    return `Favor su ayuda aceptando en el SRI la anulación de la siguiente retención:
 
 **Número de Retención:** ${extractedData.numeroRetencion}
 **Autorización:** ${extractedData.autorizacion}
@@ -156,11 +163,7 @@ export default function PdfExtractor() {
     if (!data) return;
     const formattedData = formatDataForClipboard(data);
     
-    // To support markdown-like bold text in clipboard
-    const blob = new Blob([formattedData], { type: 'text/plain' });
-    const clipboardItem = new ClipboardItem({ 'text/plain': blob });
-    
-    navigator.clipboard.write([clipboardItem]).then(() => {
+    navigator.clipboard.writeText(formattedData).then(() => {
       toast({
         title: "Copiado al Portapapeles",
         description: "Todos los datos extraídos han sido copiados.",
@@ -172,11 +175,12 @@ export default function PdfExtractor() {
     if (!data) return;
     const formattedData = formatDataForClipboard(data);
     const subject = "Solicitud anulación retención";
-    // For email, we will use newline characters instead of markdown for bolding.
     const emailBody = formattedData.replace(/\*\*/g, '');
     const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
     window.location.href = mailtoLink;
   };
+
+  const isLoading = isPending || isReadingFile;
 
   return (
     <div className="space-y-8">
@@ -197,7 +201,7 @@ export default function PdfExtractor() {
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => !isLoading && fileInputRef.current?.click()}
           >
             <UploadCloud className="w-12 h-12 text-muted-foreground" />
             <p className="mt-4 text-center text-muted-foreground">
@@ -209,6 +213,7 @@ export default function PdfExtractor() {
               accept="application/pdf"
               className="hidden"
               onChange={onFileChange}
+              disabled={isLoading}
             />
           </div>
 
@@ -218,15 +223,15 @@ export default function PdfExtractor() {
                 <FileText className="w-6 h-6 text-primary" />
                 <span className="font-medium">{file.name}</span>
               </div>
-              <Button variant="ghost" size="icon" onClick={handleRemoveFile}>
+              <Button variant="ghost" size="icon" onClick={handleRemoveFile} disabled={isLoading}>
                 <XCircle className="w-5 h-5" />
               </Button>
             </div>
           )}
         </CardContent>
         <CardFooter className="flex justify-center p-6 border-t">
-          <Button onClick={handleExtractData} disabled={!file || isPending} size="lg">
-            {isPending ? (
+          <Button onClick={() => file && handleExtractData(file)} disabled={!file || isLoading} size="lg">
+            {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Extrayendo...
@@ -246,8 +251,8 @@ export default function PdfExtractor() {
         </Alert>
       )}
 
-      {(isPending || data) && (
-        <Card className={cn("transition-opacity duration-500", isPending && !data ? "opacity-50" : "opacity-100")}>
+      {(isLoading || data) && (
+        <Card className={cn("transition-opacity duration-500", isLoading && !data ? "opacity-50" : "opacity-100")}>
           <CardHeader>
             <CardTitle>Información Extraída</CardTitle>
             <CardDescription>Revisa los datos extraídos de tu documento.</CardDescription>
