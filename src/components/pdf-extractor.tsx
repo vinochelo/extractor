@@ -49,13 +49,15 @@ export default function PdfExtractor() {
   const { toast } = useToast();
 
   const handleFileChange = (selectedFile: File | null) => {
+    setData(null);
+    setError(null);
     if (selectedFile && selectedFile.type === 'application/pdf') {
       setFile(selectedFile);
-      setError(null);
-      setData(null);
     } else {
-      setError('Por favor, selecciona un archivo PDF válido.');
       setFile(null);
+      if (selectedFile) { // only show error if a file was selected and it was invalid
+        setError('Por favor, selecciona un archivo PDF válido.');
+      }
     }
   };
 
@@ -93,13 +95,17 @@ export default function PdfExtractor() {
 
   const formatNumeroFactura = (numero?: string) => {
     if (!numero) return undefined;
-    if (numero.length > 6) {
-      return `${numero.slice(0, 3)}-${numero.slice(3, 6)}-${numero.slice(6)}`;
+    
+    // Remove any existing hyphens to handle re-extraction
+    const digits = numero.replace(/-/g, '');
+
+    if (digits.length > 6) {
+      return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
     }
-    if (numero.length > 3) {
-      return `${numero.slice(0, 3)}-${numero.slice(3)}`;
+    if (digits.length > 3) {
+      return `${digits.slice(0, 3)}-${digits.slice(3)}`;
     }
-    return numero;
+    return digits;
   }
 
   const handleExtractData = () => {
