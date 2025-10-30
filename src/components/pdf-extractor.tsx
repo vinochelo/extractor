@@ -91,6 +91,17 @@ export default function PdfExtractor() {
     }
   };
 
+  const formatNumeroFactura = (numero?: string) => {
+    if (!numero) return undefined;
+    if (numero.length > 6) {
+      return `${numero.slice(0, 3)}-${numero.slice(3, 6)}-${numero.slice(6)}`;
+    }
+    if (numero.length > 3) {
+      return `${numero.slice(0, 3)}-${numero.slice(3)}`;
+    }
+    return numero;
+  }
+
   const handleExtractData = () => {
     if (!file) return;
 
@@ -116,13 +127,14 @@ export default function PdfExtractor() {
   };
   
   const formatDataForClipboard = (extractedData: ExtractionOutput): string => {
+    const formattedNumeroFactura = formatNumeroFactura(extractedData.numeroFactura) || extractedData.numeroFactura;
     return `Favor su ayuda aceptando la anulación en el SRI de la siguiente retención:
 
 Número de Retención: ${extractedData.numeroRetencion}
 Autorización: ${extractedData.autorizacion}
 Razón Social: ${extractedData.razonSocial}
 RUC Cliente: ${extractedData.rucCliente}
-Número de Factura que aplica: ${extractedData.numeroFactura}`;
+Número de Factura que aplica: ${formattedNumeroFactura}`;
   };
 
   const handleCopyAll = () => {
@@ -223,7 +235,7 @@ Número de Factura que aplica: ${extractedData.numeroFactura}`;
               <DataField label="Autorización" value={data?.autorizacion} />
               <DataField label="Razón Social" value={data?.razonSocial} />
               <DataField label="RUC Cliente" value={data?.rucCliente} />
-              <DataField label="Número de Factura que aplica" value={data?.numeroFactura} />
+              <DataField label="Número de Factura que aplica" value={formatNumeroFactura(data?.numeroFactura)} />
             </div>
           </CardContent>
           <CardFooter className="flex flex-wrap gap-2 justify-end border-t p-6">
