@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, where } from "firebase/firestore";
+import { collection, query, orderBy } from "firebase/firestore";
 import { useFirestore } from "@/firebase/provider";
 import {
   Table,
@@ -61,8 +61,8 @@ export function RetentionHistoryTable() {
       return format(date.toDate(), "dd/MM/yyyy HH:mm");
     }
     try {
-        // For strings or numbers
-        return format(new Date(date), "dd/MM/yyyy");
+        // For strings or numbers from client side generation
+        return format(new Date(date), "dd/MM/yyyy HH:mm");
     } catch {
         return "Fecha inválida";
     }
@@ -85,7 +85,7 @@ export function RetentionHistoryTable() {
   return (
     <Card className="w-full max-w-7xl mx-auto mt-12">
       <CardHeader>
-        <CardTitle>Historial de Retenciones</CardTitle>
+        <CardTitle>Historial de Retenciones</CardTitle>        
         <CardDescription>
           Aquí puedes ver todas las retenciones que has procesado.
         </CardDescription>
@@ -103,7 +103,7 @@ export function RetentionHistoryTable() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nro. Retención</TableHead>
-                <TableHead>Razón Social</TableHead>
+                <TableHead>Razón Social Proveedor</TableHead>
                 <TableHead>Autorización</TableHead>
                 <TableHead>Nro. Factura</TableHead>
                 <TableHead>Fecha Creación</TableHead>
@@ -117,8 +117,8 @@ export function RetentionHistoryTable() {
                   retenciones.map((item: RetentionRecord) => (
                     <TableRow key={item.id}>
                       <TableCell><Badge variant="secondary">{item.numeroRetencion}</Badge></TableCell>
-                      <TableCell className="font-medium">{item.razonSocial}</TableCell>
-                      <TableCell className="font-mono text-xs">{item.autorizacion}</TableCell>
+                      <TableCell className="font-medium">{item.razonSocialProveedor}</TableCell>
+                      <TableCell className="font-mono text-xs">{item.numeroAutorizacion}</TableCell>
                       <TableCell>{item.numeroFactura}</TableCell>
                       <TableCell>{formatDate(item.createdAt)}</TableCell>
                       <TableCell>{item.fechaEmision}</TableCell>
@@ -126,7 +126,7 @@ export function RetentionHistoryTable() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleVerifySRI(item.autorizacion)}
+                          onClick={() => handleVerifySRI(item.numeroAutorizacion)}
                         >
                           Verificar en SRI
                           <ExternalLink className="ml-2 h-3 w-3" />

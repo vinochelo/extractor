@@ -2,9 +2,9 @@ import type { Timestamp } from "firebase/firestore";
 
 export type RetentionData = {
   numeroRetencion: string;
-  autorizacion: string;
-  razonSocial: string;
-  rucCliente: string;
+  numeroAutorizacion: string;
+  razonSocialProveedor: string;
+  rucProveedor: string;
   numeroFactura: string;
   fechaEmision: string;
 };

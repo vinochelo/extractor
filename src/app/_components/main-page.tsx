@@ -4,12 +4,14 @@ import { useState } from "react";
 import { PdfUploader } from "./pdf-uploader";
 import { ExtractionResultCard } from "./extraction-result-card";
 import { RetentionHistoryTable } from "./retention-history-table";
-import { extractAndSaveRetention } from "@/app/actions";
-import { useUser } from "@/firebase";
+import { extractData } from "@/app/actions";
+import { useUser, useFirestore, addDocumentNonBlocking } from "@/firebase";
+import { collection } from "firebase/firestore";
 import { type RetentionData } from "@/lib/types";
 
 export function MainPage() {
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +37,7 @@ export function MainPage() {
   };
 
   const handleSubmit = async () => {
-    if (!file || !user) return;
+    if (!file || !user || !firestore) return;
 
     setLoading(true);
     setError(null);
@@ -43,14 +45,22 @@ export function MainPage() {
 
     try {
       const fileAsDataUrl = await fileToDataUrl(file);
-      const result = await extractAndSaveRetention({
+      const result = await extractData({
         fileAsDataUrl,
-        fileName: file.name,
-        userId: user.uid,
       });
 
       if (result.success) {
-        setExtractedData(result.data);
+        const retentionRecord = {
+          ...result.data,
+          fileName: file.name,
+          createdAt: new Date(),
+          userId: user.uid,
+        };
+
+        const retencionesCollection = collection(firestore, 'users', user.uid, 'retenciones');
+        addDocumentNonBlocking(retencionesCollection, retentionRecord);
+
+        setExtractedData(retentionRecord as any);
         setFile(null);
       } else {
         setError(result.error);

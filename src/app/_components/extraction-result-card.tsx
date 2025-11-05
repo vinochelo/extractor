@@ -18,24 +18,41 @@ interface ExtractionResultCardProps {
   data: RetentionData;
 }
 
+// Helper to format keys for display
+const formatDisplayKey = (key: string): string => {
+  const keyMap: { [key: string]: string } = {
+    numeroRetencion: "Nro. Retención",
+    numeroAutorizacion: "Autorización",
+    razonSocialProveedor: "Razón Social Proveedor",
+    rucProveedor: "RUC Proveedor",
+    numeroFactura: "Nro. Factura",
+    fechaEmision: "Fecha Emisión",
+  };
+  return keyMap[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+};
+
 export function ExtractionResultCard({ data }: ExtractionResultCardProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
-  const formattedText = `
+  // Filter out unwanted properties before rendering
+  const displayableData = Object.entries(data).filter(
+    ([key]) => !['id', 'fileName', 'createdAt', 'userId'].includes(key)
+  );
+
+  const formattedText = displayableData
+    .map(([key, value]) => `${formatDisplayKey(key)}: ${value}`)
+    .join('\n');
+
+  const fullFormattedText = `
 Resumen de Retención:
 --------------------------------
-Nro. Retención: ${data.numeroRetencion}
-Autorización: ${data.autorizacion}
-Razón Social: ${data.razonSocial}
-RUC Cliente: ${data.rucCliente}
-Nro. Factura: ${data.numeroFactura}
-Fecha Emisión: ${data.fechaEmision}
+${formattedText}
 --------------------------------
   `.trim();
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(formattedText).then(() => {
+    navigator.clipboard.writeText(fullFormattedText).then(() => {
       setCopied(true);
       toast({
         title: "Copiado al portapapeles",
@@ -47,7 +64,7 @@ Fecha Emisión: ${data.fechaEmision}
 
   const handleShare = () => {
     const subject = `Retención: ${data.numeroRetencion}`;
-    const body = encodeURIComponent(formattedText);
+    const body = encodeURIComponent(fullFormattedText);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
@@ -61,16 +78,12 @@ Fecha Emisión: ${data.fechaEmision}
       </CardHeader>
       <CardContent className="grid gap-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          {Object.entries(data).map(([key, value]) => {
-            // A simple way to format the key
-            const formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-            return (
-              <div key={key} className="p-3 bg-muted/50 rounded-lg">
-                <p className="font-semibold text-muted-foreground">{formattedKey}</p>
-                <p className="font-mono text-foreground break-words">{value}</p>
-              </div>
-            )
-          })}
+          {displayableData.map(([key, value]) => (
+            <div key={key} className="p-3 bg-muted/50 rounded-lg">
+              <p className="font-semibold text-muted-foreground">{formatDisplayKey(key)}</p>
+              <p className="font-mono text-foreground break-words">{value}</p>
+            </div>
+          ))}
         </div>
       </CardContent>
       <CardFooter className="flex justify-end gap-2">

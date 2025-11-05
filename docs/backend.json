@@ -4,47 +4,47 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Retencion",
       "type": "object",
-      "description": "Represents a 'retencion' (tax withholding document) extracted from a PDF.",
+      "description": "Representa una 'retencion' (tax withholding document) extraída de un PDF.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Retencion entity."
+          "description": "Identificador único para la entidad Retencion."
         },
         "userId": {
           "type": "string",
-          "description": "Reference to the User who uploaded this Retencion. (Relationship: User 1:N Retencion)"
+          "description": "Referencia al Usuario que subió esta Retencion. (Relación: Usuario 1:N Retencion)"
         },
         "numeroRetencion": {
           "type": "string",
-          "description": "The 'numeroRetencion' (retention number) extracted from the PDF."
+          "description": "El 'Numero de retención' extraído del PDF."
         },
-        "autorizacion": {
+        "numeroAutorizacion": {
           "type": "string",
-          "description": "The 'autorizacion' (authorization number) extracted from the PDF."
+          "description": "El 'numero de autorización' extraído del PDF."
         },
-        "razonSocial": {
+        "razonSocialProveedor": {
           "type": "string",
-          "description": "The 'razonSocial' (company name) extracted from the PDF."
+          "description": "La 'razon social del proveedor' extraída del PDF."
         },
-        "rucCliente": {
+        "rucProveedor": {
           "type": "string",
-          "description": "The 'rucCliente' (client's RUC number) extracted from the PDF."
+          "description": "El 'ruc del proveedor' extraído del PDF."
         },
         "numeroFactura": {
           "type": "string",
-          "description": "The 'numeroFactura' (invoice number) extracted from the PDF."
+          "description": "El 'numero de factura' extraído del PDF."
         },
         "fechaEmision": {
           "type": "string",
-          "description": "The 'fechaEmision' (emission date) extracted from the PDF."
+          "description": "La 'fechaEmision' (fecha de emisión) extraída del PDF."
         },
         "fileName": {
           "type": "string",
-          "description": "The name of the PDF file from which the data was extracted."
+          "description": "El nombre del archivo PDF del cual se extrajeron los datos."
         },
         "createdAt": {
           "type": "string",
-          "description": "The timestamp indicating when the Retencion was created (extracted and stored).",
+          "description": "La marca de tiempo que indica cuándo se creó la Retencion (extraída y almacenada).",
           "format": "date-time"
         }
       },
@@ -52,9 +52,9 @@
         "id",
         "userId",
         "numeroRetencion",
-        "autorizacion",
-        "razonSocial",
-        "rucCliente",
+        "numeroAutorizacion",
+        "razonSocialProveedor",
+        "rucProveedor",
         "numeroFactura",
         "fechaEmision",
         "fileName",
@@ -65,11 +65,11 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
-      "description": "Represents a user of the application. Using anonymous authentication.",
+      "description": "Representa a un usuario de la aplicación. Usando autenticación anónima.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the User entity. This corresponds to the Firebase Auth UID."
+          "description": "Identificador único para la entidad Usuario. Esto corresponde al UID de Firebase Auth."
         }
       },
       "required": [
@@ -92,11 +92,11 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user data. The 'userId' parameter corresponds to the Firebase Auth UID.",
+          "description": "Almacena los datos del usuario. El parámetro 'userId' corresponde al UID de Firebase Auth.",
           "params": [
             {
               "name": "userId",
-              "description": "The Firebase Auth UID of the user."
+              "description": "El UID de Firebase Auth del usuario."
             }
           ]
         }
@@ -108,20 +108,20 @@
           "schema": {
             "$ref": "#/backend/entities/Retencion"
           },
-          "description": "Stores retenciones data for a specific user. The 'userId' parameter corresponds to the Firebase Auth UID, ensuring path-based ownership. The 'retencionId' is the unique ID for the retencion document.",
+          "description": "Almacena los datos de las retenciones de un usuario específico. El parámetro 'userId' corresponde al UID de Firebase Auth, asegurando la propiedad basada en la ruta. El 'retencionId' es el ID único para el documento de retención.",
           "params": [
             {
               "name": "userId",
-              "description": "The Firebase Auth UID of the user who owns the retencion."
+              "description": "El UID de Firebase Auth del usuario propietario de la retención."
             },
             {
               "name": "retencionId",
-              "description": "The unique identifier for the retencion document."
+              "description": "El identificador único para el documento de retención."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure secure and efficient data management for the RetenciónWise application. It leverages path-based ownership for user retenciones, aligning with best practices for Firebase security.  The structure avoids `get()` calls in security rules by utilizing path-based ownership, thus achieving Authorization Independence and atomic operations. This approach ensures that security rules are simple, robust, and easily debuggable. Additionally, structural segregation keeps documents with the same access needs in the same collections to avoid filtering in rules. The chosen structure facilitates secure `list` operations (QAPs) as access control is naturally enforced by the path structure."
+    "reasoning": "La estructura de Firestore está diseñada para garantizar una gestión de datos segura y eficiente para la aplicación RetenciónWise. Aprovecha la propiedad basada en la ruta para las retenciones de los usuarios, alineándose con las mejores prácticas de seguridad de Firebase. La estructura evita las llamadas `get()` en las reglas de seguridad utilizando la propiedad basada en la ruta, logrando así la Independencia de Autorización y operaciones atómicas. Este enfoque asegura que las reglas de seguridad sean simples, robustas y fáciles de depurar. Además, la segregación estructural mantiene los documentos con las mismas necesidades de acceso en las mismas colecciones para evitar el filtrado en las reglas. La estructura elegida facilita las operaciones `list` seguras (QAPs) ya que el control de acceso se aplica de forma natural por la estructura de la ruta."
   }
 }

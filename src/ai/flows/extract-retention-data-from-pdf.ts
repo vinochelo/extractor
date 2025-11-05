@@ -21,12 +21,12 @@ const ExtractRetentionDataFromPDFInputSchema = z.object({
 export type ExtractRetentionDataFromPDFInput = z.infer<typeof ExtractRetentionDataFromPDFInputSchema>;
 
 const ExtractRetentionDataFromPDFOutputSchema = z.object({
-  numeroRetencion: z.string().describe('The retention number.'),
-  autorizacion: z.string().describe('The authorization number.'),
-  razonSocial: z.string().describe('The business name.'),
-  rucCliente: z.string().describe('The client RUC number.'),
-  numeroFactura: z.string().describe('The invoice number.'),
-  fechaEmision: z.string().describe('The issue date.'),
+  numeroRetencion: z.string().describe('El "Numero de retención" del documento.'),
+  numeroAutorizacion: z.string().describe('El "numero de autorización" del documento.'),
+  razonSocialProveedor: z.string().describe('La "razon social del proveedor" del documento.'),
+  rucProveedor: z.string().describe('El "ruc del proveedor" del documento.'),
+  numeroFactura: z.string().describe('El "numero de factura" del documento.'),
+  fechaEmision: z.string().describe('La "fechaEmision" del documento.'),
 });
 export type ExtractRetentionDataFromPDFOutput = z.infer<typeof ExtractRetentionDataFromPDFOutputSchema>;
 
@@ -44,9 +44,9 @@ const prompt = ai.definePrompt({
 
   Extract the following fields from the document provided as a PDF data URI:
   - numeroRetencion
-  - autorizacion
-  - razonSocial
-  - rucCliente
+  - numeroAutorizacion
+  - razonSocialProveedor
+  - rucProveedor
   - numeroFactura
   - fechaEmision
 
