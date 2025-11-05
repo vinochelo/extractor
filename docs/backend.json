@@ -46,6 +46,11 @@
           "type": "string",
           "description": "La marca de tiempo que indica cuándo se creó la Retencion (extraída y almacenada).",
           "format": "date-time"
+        },
+        "estado": {
+          "type": "string",
+          "description": "El estado actual de la retención.",
+          "enum": ["Solicitado", "Pendiente Anular", "Anulado"]
         }
       },
       "required": [
@@ -58,7 +63,8 @@
         "numeroFactura",
         "fechaEmision",
         "fileName",
-        "createdAt"
+        "createdAt",
+        "estado"
       ]
     },
     "User": {

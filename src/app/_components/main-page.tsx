@@ -17,6 +17,7 @@ export function MainPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [extractedData, setExtractedData] = useState<RetentionRecord | null>(null);
+  const [historyKey, setHistoryKey] = useState(Date.now());
 
   useEffect(() => {
     // Automatically sign in the user anonymously if not logged in and not loading.
@@ -64,6 +65,7 @@ export function MainPage() {
           fileName: file.name,
           createdAt: new Date(), // Use JS Date object, Firestore will convert it.
           userId: user.uid,
+          estado: "Solicitado", // Set default status
         };
         
         const retencionesCollection = collection(firestore, 'users', user.uid, 'retenciones');
@@ -75,6 +77,7 @@ export function MainPage() {
         // with what's being saved to Firestore.
         setExtractedData({ ...retentionRecord, id: docRef ? docRef.id : 'temp-id' });
         setFile(null); // Clear the file input on success
+        setHistoryKey(Date.now()); // Force a re-fetch of the history
       } else {
         setError(result.error);
       }
@@ -96,6 +99,10 @@ export function MainPage() {
         </p>
       </div>
 
+      <div className="mb-12">
+        <RetentionHistoryTable key={historyKey} />
+      </div>
+
       <PdfUploader
         file={file}
         onFileChange={handleFileChange}
@@ -106,10 +113,7 @@ export function MainPage() {
       />
 
       {extractedData && <ExtractionResultCard data={extractedData} />}
-      
-      <div className="mt-12">
-        <RetentionHistoryTable />
-      </div>
+
     </main>
   );
 }

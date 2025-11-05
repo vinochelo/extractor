@@ -1,5 +1,7 @@
 import type { Timestamp } from "firebase/firestore";
 
+export type RetentionStatus = "Solicitado" | "Pendiente Anular" | "Anulado";
+
 export type RetentionData = {
   numeroRetencion: string;
   numeroAutorizacion: string;
@@ -14,4 +16,5 @@ export type RetentionRecord = RetentionData & {
   fileName: string;
   createdAt: Timestamp | Date;
   userId: string;
+  estado: RetentionStatus;
 };
