@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
-import { useUser, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy } from "firebase/firestore";
-import { useFirestore } from "@/firebase/provider";
+import { useMemo } from 'react';
+import { useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { useFirestore } from '@/firebase/provider';
 import {
   Table,
   TableBody,
@@ -11,30 +11,29 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from '@/components/ui/accordion';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
-import { ExternalLink, FileWarning, Archive } from "lucide-react";
-import { format } from "date-fns";
-import type { RetentionRecord } from "@/lib/types";
-import { StatusMenu } from "./status-menu";
-import { StatusBadge } from "./status-badge";
-
+} from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+import { ExternalLink, FileWarning, Archive } from 'lucide-react';
+import { format } from 'date-fns';
+import type { RetentionRecord } from '@/lib/types';
+import { StatusSelector } from './status-selector';
+import { StatusBadge } from './status-badge';
 
 export function RetentionHistoryTable() {
   const { user } = useUser();
@@ -45,11 +44,15 @@ export function RetentionHistoryTable() {
     if (!firestore || !user?.uid) return null;
     return query(
       collection(firestore, `users/${user.uid}/retenciones`),
-      orderBy("createdAt", "desc")
+      orderBy('createdAt', 'desc')
     );
   }, [firestore, user?.uid]);
 
-  const { data: retenciones, isLoading: loading, error } = useCollection<RetentionRecord>(retencionesQuery);
+  const {
+    data: retenciones,
+    isLoading: loading,
+    error,
+  } = useCollection<RetentionRecord>(retencionesQuery);
 
   const { activeRetenciones, anulatedRetenciones } = useMemo(() => {
     const active = retenciones?.filter(r => r.estado !== 'Anulado') || [];
@@ -57,49 +60,64 @@ export function RetentionHistoryTable() {
     return { activeRetenciones: active, anulatedRetenciones: anulated };
   }, [retenciones]);
 
-
   const handleVerifySRI = (autorizacion: string) => {
     navigator.clipboard.writeText(autorizacion).then(() => {
       toast({
-        title: "Autorización Copiada",
-        description: "El número de autorización se ha copiado al portapapeles.",
+        title: 'Autorización Copiada',
+        description: 'El número de autorización se ha copiado al portapapeles.',
       });
       window.open(
-        "https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/publico/validezComprobantes.jsf",
-        "_blank"
+        'https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/publico/validezComprobantes.jsf',
+        '_blank'
       );
     });
   };
 
   const formatDate = (date: any) => {
-    if (!date) return "N/A";
-    if (date.toDate) { // Firebase Timestamp
-      return format(date.toDate(), "dd/MM/yyyy HH:mm");
+    if (!date) return 'N/A';
+    if (date.toDate) {
+      // Firebase Timestamp
+      return format(date.toDate(), 'dd/MM/yyyy HH:mm');
     }
     try {
-        // For strings or numbers from client side generation
-        return format(new Date(date), "dd/MM/yyyy HH:mm");
+      // For strings or numbers from client side generation
+      return format(new Date(date), 'dd/MM/yyyy HH:mm');
     } catch {
-        return "Fecha inválida";
+      return 'Fecha inválida';
     }
   };
 
-  const renderSkeleton = () => (
+  const renderSkeleton = () =>
     Array.from({ length: 3 }).map((_, i) => (
       <TableRow key={i}>
-        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-        <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-        <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-        <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-        <TableCell><Skeleton className="h-9 w-24" /></TableCell>
+        <TableCell>
+          <Skeleton className="h-4 w-24" />
+        </TableCell>
+        <TableCell>
+          <Skeleton className="h-4 w-32" />
+        </TableCell>
+        <TableCell>
+          <Skeleton className="h-4 w-40" />
+        </TableCell>
+        <TableCell>
+          <Skeleton className="h-4 w-20" />
+        </TableCell>
+        <TableCell>
+          <Skeleton className="h-6 w-24" />
+        </TableCell>
+        <TableCell>
+          <Skeleton className="h-4 w-28" />
+        </TableCell>
+        <TableCell>
+          <Skeleton className="h-4 w-28" />
+        </TableCell>
+        <TableCell>
+          <Skeleton className="h-9 w-24" />
+        </TableCell>
       </TableRow>
-    ))
-  );
+    ));
 
-  const renderTableRows = (items: RetentionRecord[], isAnulatedSection = false) => {
+  const renderTableRows = (items: RetentionRecord[]) => {
     if (items.length === 0) {
       return (
         <TableRow>
@@ -112,8 +130,53 @@ export function RetentionHistoryTable() {
     return items.map((item: RetentionRecord) => (
       <TableRow key={item.id}>
         <TableCell className="font-mono">{item.numeroRetencion}</TableCell>
-        <TableCell className="font-medium">{item.razonSocialProveedor}</TableCell>
-        <TableCell className="font-mono text-xs">{item.numeroAutorizacion}</TableCell>
+        <TableCell className="font-medium">
+          {item.razonSocialProveedor}
+        </TableCell>
+        <TableCell className="font-mono text-xs">
+          {item.numeroAutorizacion}
+        </TableCell>
+        <TableCell>{item.numeroFactura}</TableCell>
+        <TableCell>
+          <StatusSelector retention={item} />
+        </TableCell>
+        <TableCell>{formatDate(item.createdAt)}</TableCell>
+        <TableCell>{item.fechaEmision}</TableCell>
+        <TableCell className="text-right">
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleVerifySRI(item.numeroAutorizacion)}
+            >
+              Verificar SRI
+              <ExternalLink className="ml-2 h-3 w-3" />
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    ));
+  };
+  
+  const renderAnulatedTableRows = (items: RetentionRecord[]) => {
+    if (items.length === 0) {
+      return (
+        <TableRow>
+          <TableCell colSpan={8} className="h-24 text-center">
+            No hay retenciones en esta categoría.
+          </TableCell>
+        </TableRow>
+      );
+    }
+    return items.map((item: RetentionRecord) => (
+      <TableRow key={item.id}>
+        <TableCell className="font-mono">{item.numeroRetencion}</TableCell>
+        <TableCell className="font-medium">
+          {item.razonSocialProveedor}
+        </TableCell>
+        <TableCell className="font-mono text-xs">
+          {item.numeroAutorizacion}
+        </TableCell>
         <TableCell>{item.numeroFactura}</TableCell>
         <TableCell><StatusBadge status={item.estado} /></TableCell>
         <TableCell>{formatDate(item.createdAt)}</TableCell>
@@ -128,29 +191,27 @@ export function RetentionHistoryTable() {
                     Verificar SRI
                     <ExternalLink className="ml-2 h-3 w-3" />
                 </Button>
-                {!isAnulatedSection && <StatusMenu retention={item} />}
             </div>
         </TableCell>
       </TableRow>
     ));
   }
 
-
   return (
     <Card className="w-full max-w-7xl mx-auto">
       <CardHeader>
-        <CardTitle>Historial de Retenciones</CardTitle>        
+        <CardTitle>Historial de Retenciones</CardTitle>
         <CardDescription>
           Aquí puedes ver y gestionar todas las retenciones que has procesado.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {error && (
-            <Alert variant="destructive">
-                <FileWarning className="h-4 w-4" />
-                <AlertTitle>Error al Cargar Historial</AlertTitle>
-                <AlertDescription>{error.message}</AlertDescription>
-            </Alert>
+          <Alert variant="destructive">
+            <FileWarning className="h-4 w-4" />
+            <AlertTitle>Error al Cargar Historial</AlertTitle>
+            <AlertDescription>{error.message}</AlertDescription>
+          </Alert>
         )}
         <div className="border rounded-lg mb-4">
           <Table>
@@ -167,45 +228,44 @@ export function RetentionHistoryTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading ? renderSkeleton() : renderTableRows(activeRetenciones) }
+              {loading ? renderSkeleton() : renderTableRows(activeRetenciones)}
             </TableBody>
           </Table>
         </div>
 
         {anulatedRetenciones.length > 0 && (
-            <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="anuladas">
-                    <AccordionTrigger>
-                        <div className="flex items-center gap-2">
-                            <Archive className="h-4 w-4" />
-                            Mostrar Retenciones Anuladas ({anulatedRetenciones.length})
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <div className="border rounded-lg">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Nro. Retención</TableHead>
-                                        <TableHead>Razón Social Proveedor</TableHead>
-                                        <TableHead>Autorización</TableHead>
-                                        <TableHead>Nro. Factura</TableHead>
-                                        <TableHead>Estado</TableHead>
-                                        <TableHead>Fecha Creación</TableHead>
-                                        <TableHead>Fecha Emisión</TableHead>
-                                        <TableHead className="text-right">Acciones</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {loading ? null : renderTableRows(anulatedRetenciones, true)}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    </AccordionContent>
-                </AccordionItem>
-            </Accordion>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="anuladas">
+              <AccordionTrigger>
+                <div className="flex items-center gap-2">
+                  <Archive className="h-4 w-4" />
+                  Mostrar Retenciones Anuladas ({anulatedRetenciones.length})
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="border rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nro. Retención</TableHead>
+                        <TableHead>Razón Social Proveedor</TableHead>
+                        <TableHead>Autorización</TableHead>
+                        <TableHead>Nro. Factura</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead>Fecha Creación</TableHead>
+                        <TableHead>Fecha Emisión</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? null : renderAnulatedTableRows(anulatedRetenciones)}
+                    </TableBody>
+                  </Table>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         )}
-
       </CardContent>
     </Card>
   );

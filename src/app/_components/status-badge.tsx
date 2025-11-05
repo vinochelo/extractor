@@ -2,12 +2,14 @@
 
 import { Badge } from "@/components/ui/badge";
 import type { RetentionStatus } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 interface StatusBadgeProps {
     status: RetentionStatus;
+    className?: string;
 }
 
-export function StatusBadge({ status }: StatusBadgeProps) {
+export function StatusBadge({ status, className }: StatusBadgeProps) {
     const getBadgeVariant = (status: RetentionStatus) => {
         switch(status) {
           case 'Solicitado':
@@ -21,5 +23,5 @@ export function StatusBadge({ status }: StatusBadgeProps) {
         }
       };
 
-    return <Badge variant={getBadgeVariant(status)}>{status}</Badge>;
+    return <Badge variant={getBadgeVariant(status)} className={cn(className)}>{status}</Badge>;
 }
