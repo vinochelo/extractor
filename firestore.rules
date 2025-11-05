@@ -1,0 +1,83 @@
+/**
+ * @fileoverview Firestore Security Rules for RetenciónWise.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for 'retenciones' (tax withholding documents) data.
+ * Each user can only access their own data, and no data is publicly accessible without authentication.
+ *
+ * Data Structure:
+ * - `/users/{userId}`: Stores user profile information. The `userId` corresponds to the Firebase Auth UID.
+ * - `/users/{userId}/retenciones/{retencionId}`: Stores 'retenciones' data for a specific user.
+ *
+ * Key Security Decisions:
+ * - Users can only create, read, update, and delete their own 'retenciones' data.
+ * - User listing is disallowed to protect user privacy.
+ * - The rules leverage path-based authorization to avoid costly `get()` calls.
+ *
+ * Denormalization for Authorization:
+ *  - The `retenciones` documents are stored under the user's path (`/users/{userId}/retenciones/{retencionId}`).
+ *    This allows to avoid needing to read the user document to check ownership.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Protects the /users collection. Only allows a user to create their own profile. Read, update, and delete are disallowed.
+     * @path /users/{userId}
+     * @allow (create) User with UID 'user_abc' can create a document at /users/user_abc.
+     * @deny (get, list, update, delete) Any other operation is denied.
+     * @principle Enforces user-ownership for user profiles.
+     */
+    match /users/{userId} {
+      allow get, list, update, delete: if false;
+      allow create: if isSignedIn() && isOwner(userId);
+    }
+
+    /**
+     * @description Manages access control for retenciones documents under a specific user. Only the owner can create, read, update, and delete their retenciones.
+     * @path /users/{userId}/retenciones/{retencionId}
+     * @allow (create) User with UID 'user_abc' can create a new retencion document under /users/user_abc/retenciones/{retencionId} if the document's userId field matches 'user_abc'.
+     * @allow (get, list) User with UID 'user_abc' can get and list retencion documents under /users/user_abc/retenciones/{retencionId}.
+     * @allow (update, delete) User with UID 'user_abc' can update and delete their existing retencion documents under /users/user_abc/retenciones/{retencionId}.
+     * @deny (create) User with UID 'user_xyz' cannot create a new retencion document under /users/user_abc/retenciones/{retencionId}.
+     * @deny (get, list, update, delete) User with UID 'user_xyz' cannot get, list, update, or delete retencion documents under /users/user_abc/retenciones/{retencionId}.
+     * @principle Enforces document ownership for writes, restricts access to a user's own retenciones data tree.
+     */
+    match /users/{userId}/retenciones/{retencionId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && resource.data.userId == userId;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    // --- Helper functions ---
+
+    /**
+     * @description Checks if the user is signed in.
+     * @return {bool} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the user ID matches the authenticated user's UID.
+     * @param {string} userId The user ID to compare against.
+     * @return {bool} True if the user ID matches the authenticated user's UID, false otherwise.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the user is the owner of an existing document.
+     * @param {string} userId The user ID to compare against.
+     * @return {bool} True if the user ID matches the authenticated user's UID and the resource exists.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+  }
+}

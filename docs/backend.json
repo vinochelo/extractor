@@ -1,0 +1,127 @@
+{
+  "entities": {
+    "Retencion": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Retencion",
+      "type": "object",
+      "description": "Represents a 'retencion' (tax withholding document) extracted from a PDF.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Retencion entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who uploaded this Retencion. (Relationship: User 1:N Retencion)"
+        },
+        "numeroRetencion": {
+          "type": "string",
+          "description": "The 'numeroRetencion' (retention number) extracted from the PDF."
+        },
+        "autorizacion": {
+          "type": "string",
+          "description": "The 'autorizacion' (authorization number) extracted from the PDF."
+        },
+        "razonSocial": {
+          "type": "string",
+          "description": "The 'razonSocial' (company name) extracted from the PDF."
+        },
+        "rucCliente": {
+          "type": "string",
+          "description": "The 'rucCliente' (client's RUC number) extracted from the PDF."
+        },
+        "numeroFactura": {
+          "type": "string",
+          "description": "The 'numeroFactura' (invoice number) extracted from the PDF."
+        },
+        "fechaEmision": {
+          "type": "string",
+          "description": "The 'fechaEmision' (emission date) extracted from the PDF."
+        },
+        "fileName": {
+          "type": "string",
+          "description": "The name of the PDF file from which the data was extracted."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The timestamp indicating when the Retencion was created (extracted and stored).",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "numeroRetencion",
+        "autorizacion",
+        "razonSocial",
+        "rucCliente",
+        "numeroFactura",
+        "fechaEmision",
+        "fileName",
+        "createdAt"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application. Using anonymous authentication.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity. This corresponds to the Firebase Auth UID."
+        }
+      },
+      "required": [
+        "id"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user data. The 'userId' parameter corresponds to the Firebase Auth UID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/retenciones/{retencionId}",
+        "definition": {
+          "entityName": "Retencion",
+          "schema": {
+            "$ref": "#/backend/entities/Retencion"
+          },
+          "description": "Stores retenciones data for a specific user. The 'userId' parameter corresponds to the Firebase Auth UID, ensuring path-based ownership. The 'retencionId' is the unique ID for the retencion document.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user who owns the retencion."
+            },
+            {
+              "name": "retencionId",
+              "description": "The unique identifier for the retencion document."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to ensure secure and efficient data management for the RetenciónWise application. It leverages path-based ownership for user retenciones, aligning with best practices for Firebase security.  The structure avoids `get()` calls in security rules by utilizing path-based ownership, thus achieving Authorization Independence and atomic operations. This approach ensures that security rules are simple, robust, and easily debuggable. Additionally, structural segregation keeps documents with the same access needs in the same collections to avoid filtering in rules. The chosen structure facilitates secure `list` operations (QAPs) as access control is naturally enforced by the path structure."
+  }
+}
