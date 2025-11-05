@@ -1,13 +1,19 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { PdfUploader } from "./pdf-uploader";
-import { ExtractionResultCard } from "./extraction-result-card";
-import { RetentionHistoryTable } from "./retention-history-table";
-import { extractData } from "@/app/actions";
-import { useUser, useFirestore, addDocumentNonBlocking, useAuth, initiateAnonymousSignIn } from "@/firebase";
-import { collection } from "firebase/firestore";
-import type { RetentionRecord } from "@/lib/types";
+import { useEffect, useState } from 'react';
+import { PdfUploader } from './pdf-uploader';
+import { ExtractionResultCard } from './extraction-result-card';
+import { RetentionHistoryTable } from './retention-history-table';
+import { extractData } from '@/app/actions';
+import {
+  useUser,
+  useFirestore,
+  addDocumentNonBlocking,
+  useAuth,
+  initiateAnonymousSignIn,
+} from '@/firebase';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import type { RetentionRecord } from '@/lib/types';
 
 export function MainPage() {
   const { user, isUserLoading } = useUser();
@@ -16,7 +22,10 @@ export function MainPage() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [extractedData, setExtractedData] = useState<RetentionRecord | null>(null);
+  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+  const [extractedData, setExtractedData] = useState<RetentionRecord | null>(
+    null
+  );
   const [historyKey, setHistoryKey] = useState(Date.now());
 
   useEffect(() => {
@@ -26,10 +35,10 @@ export function MainPage() {
     }
   }, [user, isUserLoading, auth]);
 
-
   const handleFileChange = (selectedFile: File) => {
     setFile(selectedFile);
     setError(null);
+    setDuplicateWarning(null);
     setExtractedData(null);
   };
 
@@ -51,6 +60,7 @@ export function MainPage() {
 
     setLoading(true);
     setError(null);
+    setDuplicateWarning(null);
     setExtractedData(null);
 
     try {
@@ -60,29 +70,55 @@ export function MainPage() {
       });
 
       if (result.success) {
-        const retentionRecord: Omit<RetentionRecord, 'id'> = {
+        // Prepare the record to show/save
+        const retentionRecordData = {
           ...result.data,
           fileName: file.name,
           createdAt: new Date(), // Use JS Date object, Firestore will convert it.
           userId: user.uid,
-          estado: "Solicitado", // Set default status
+          estado: 'Solicitado' as const, // Set default status
         };
-        
-        const retencionesCollection = collection(firestore, 'users', user.uid, 'retenciones');
-        // The addDoc promise resolves with a DocumentReference
-        const docRef = await addDocumentNonBlocking(retencionesCollection, retentionRecord);
 
-        // Show the results card immediately with the data we have.
-        // We can use the client-generated data for the UI, as it will be consistent
-        // with what's being saved to Firestore.
-        setExtractedData({ ...retentionRecord, id: docRef ? docRef.id : 'temp-id' });
-        setFile(null); // Clear the file input on success
-        setHistoryKey(Date.now()); // Force a re-fetch of the history
+        // --- Check for duplicates ---
+        const retencionesCollection = collection(
+          firestore,
+          'users',
+          user.uid,
+          'retenciones'
+        );
+        const q = query(
+          retencionesCollection,
+          where('numeroRetencion', '==', result.data.numeroRetencion)
+        );
+        const querySnapshot = await getDocs(q);
+
+        // Always show the extracted data card
+        setExtractedData({ ...retentionRecordData, id: 'temp-preview' });
+        setFile(null); // Clear the file input
+
+        if (!querySnapshot.empty) {
+          // --- It's a duplicate ---
+          setDuplicateWarning(
+            `La retención Nro. ${result.data.numeroRetencion} ya existe en tu historial. No se guardará de nuevo.`
+          );
+        } else {
+          // --- It's not a duplicate, save it ---
+          const docRef = await addDocumentNonBlocking(
+            retencionesCollection,
+            retentionRecordData
+          );
+          // Refresh the history table
+          setHistoryKey(Date.now());
+          // We can update the temporary extracted data with the real ID, though not strictly necessary
+          if (docRef) {
+            setExtractedData({ ...retentionRecordData, id: docRef.id });
+          }
+        }
       } else {
         setError(result.error);
       }
     } catch (e: any) {
-      setError(e.message || "Ocurrió un error inesperado.");
+      setError(e.message || 'Ocurrió un error inesperado.');
     } finally {
       setLoading(false);
     }
@@ -95,7 +131,8 @@ export function MainPage() {
           Retención<span className="text-primary">Wise</span>
         </h1>
         <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-          Extrae datos de tus documentos de retención PDF de forma rápida y segura con el poder de la IA.
+          Extrae datos de tus documentos de retención PDF de forma rápida y
+          segura con el poder de la IA.
         </p>
       </div>
 
@@ -110,10 +147,10 @@ export function MainPage() {
         onSubmit={handleSubmit}
         loading={loading || isUserLoading}
         error={error}
+        warning={duplicateWarning}
       />
 
       {extractedData && <ExtractionResultCard data={extractedData} />}
-
     </main>
   );
 }

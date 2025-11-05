@@ -3,7 +3,7 @@
 import React, { useState, useCallback, ChangeEvent, DragEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { UploadCloud, File, X, Loader2, AlertCircle } from "lucide-react";
+import { UploadCloud, File, X, Loader2, AlertCircle, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PdfUploaderProps {
@@ -13,6 +13,7 @@ interface PdfUploaderProps {
   file: File | null;
   loading: boolean;
   error: string | null;
+  warning: string | null;
 }
 
 export function PdfUploader({
@@ -22,6 +23,7 @@ export function PdfUploader({
   file,
   loading,
   error,
+  warning,
 }: PdfUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
 
@@ -126,6 +128,15 @@ export function PdfUploader({
                 <AlertDescription>{error}</AlertDescription>
             </Alert>
         )}
+
+        {warning && (
+            <Alert variant="warning">
+                <Info className="h-4 w-4" />
+                <AlertTitle>Retención Duplicada</AlertTitle>
+                <AlertDescription>{warning}</AlertDescription>
+            </Alert>
+        )}
+
 
         <Button type="submit" className="w-full" disabled={!file || loading}>
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
