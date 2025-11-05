@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
-import { useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { useMemo, useState } from 'react';
+import { useUser, useCollection, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, query, orderBy, doc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase/provider';
 import {
   Table,
@@ -19,6 +19,16 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Card,
   CardContent,
   CardDescription,
@@ -29,9 +39,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { ExternalLink, FileWarning, Archive } from 'lucide-react';
+import { ExternalLink, FileWarning, Archive, RotateCcw, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
-import type { RetentionRecord } from '@/lib/types';
+import type { RetentionRecord, RetentionStatus } from '@/lib/types';
 import { StatusSelector } from './status-selector';
 import { StatusBadge } from './status-badge';
 
@@ -39,6 +49,8 @@ export function RetentionHistoryTable() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const [retentionToDelete, setRetentionToDelete] = useState<RetentionRecord | null>(null);
+
 
   const retencionesQuery = useMemoFirebase(() => {
     if (!firestore || !user?.uid) return null;
@@ -72,6 +84,40 @@ export function RetentionHistoryTable() {
       );
     });
   };
+
+  const handleRevertStatus = (retention: RetentionRecord) => {
+    if (!firestore || !user?.uid) return;
+
+    let previousStatus: RetentionStatus | null = null;
+    if (retention.estado === 'Pendiente Anular') {
+      previousStatus = 'Solicitado';
+    } else if (retention.estado === 'Anulado') {
+      previousStatus = 'Pendiente Anular';
+    }
+    
+    if (previousStatus) {
+        const retentionRef = doc(firestore, `users/${user.uid}/retenciones`, retention.id);
+        updateDocumentNonBlocking(retentionRef, { estado: previousStatus });
+        toast({
+            title: 'Estado Revertido',
+            description: `La retención ha vuelto al estado: ${previousStatus}.`,
+        });
+    }
+  };
+
+  const handleDelete = () => {
+    if (!firestore || !user?.uid || !retentionToDelete) return;
+    
+    const retentionRef = doc(firestore, `users/${user.uid}/retenciones`, retentionToDelete.id);
+    deleteDocumentNonBlocking(retentionRef);
+    
+    toast({
+      title: 'Retención Eliminada',
+      description: `La retención ha sido eliminada permanentemente.`,
+    });
+    setRetentionToDelete(null);
+  };
+
 
   const formatDate = (date: any) => {
     if (!date) return 'N/A';
@@ -144,6 +190,14 @@ export function RetentionHistoryTable() {
         <TableCell>{item.fechaEmision}</TableCell>
         <TableCell className="text-right">
           <div className="flex items-center justify-end gap-2">
+            {item.estado !== 'Solicitado' && (
+                <Button size="icon" variant="ghost" onClick={() => handleRevertStatus(item)} title="Revertir Estado">
+                    <RotateCcw className="h-4 w-4" />
+                </Button>
+            )}
+            <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setRetentionToDelete(item)} title="Eliminar">
+                <Trash2 className="h-4 w-4" />
+            </Button>
             <Button
               size="sm"
               variant="outline"
@@ -183,6 +237,12 @@ export function RetentionHistoryTable() {
         <TableCell>{item.fechaEmision}</TableCell>
         <TableCell className="text-right">
             <div className="flex items-center justify-end gap-2">
+                <Button size="icon" variant="ghost" onClick={() => handleRevertStatus(item)} title="Revertir a Pendiente Anular">
+                    <RotateCcw className="h-4 w-4" />
+                </Button>
+                <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setRetentionToDelete(item)} title="Eliminar">
+                    <Trash2 className="h-4 w-4" />
+                </Button>
                 <Button
                     size="sm"
                     variant="outline"
@@ -198,6 +258,7 @@ export function RetentionHistoryTable() {
   }
 
   return (
+    <>
     <Card className="w-full max-w-7xl mx-auto">
       <CardHeader>
         <CardTitle>Historial de Retenciones</CardTitle>
@@ -233,13 +294,13 @@ export function RetentionHistoryTable() {
           </Table>
         </div>
 
-        {anulatedRetenciones.length > 0 && (
-          <Accordion type="single" collapsible className="w-full">
+        {(anulatedRetenciones.length > 0 || loading) && (
+          <Accordion type="single" collapsible className="w-full" disabled={loading}>
             <AccordionItem value="anuladas">
               <AccordionTrigger>
                 <div className="flex items-center gap-2">
                   <Archive className="h-4 w-4" />
-                  Mostrar Retenciones Anuladas ({anulatedRetenciones.length})
+                  Mostrar Retenciones Anuladas ({loading ? '...' : anulatedRetenciones.length})
                 </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -258,7 +319,7 @@ export function RetentionHistoryTable() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {loading ? null : renderAnulatedTableRows(anulatedRetenciones)}
+                      {loading ? renderSkeleton() : renderAnulatedTableRows(anulatedRetenciones)}
                     </TableBody>
                   </Table>
                 </div>
@@ -268,5 +329,25 @@ export function RetentionHistoryTable() {
         )}
       </CardContent>
     </Card>
+      <AlertDialog open={!!retentionToDelete} onOpenChange={(open) => !open && setRetentionToDelete(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta acción es permanente y no se puede deshacer. La retención <strong>{retentionToDelete?.numeroRetencion}</strong> será eliminada de forma definitiva.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => setRetentionToDelete(null)}>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Sí, eliminar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

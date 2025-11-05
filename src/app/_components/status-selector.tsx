@@ -4,14 +4,18 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useFirestore, useUser, updateDocumentNonBlocking } from '@/firebase';
+import { useFirestore, useUser, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { RetentionRecord, RetentionStatus } from '@/lib/types';
 import { StatusBadge } from './status-badge';
-import { Archive, FileWarning } from 'lucide-react';
+import { Archive, FileWarning, RotateCcw, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+
 
 interface StatusSelectorProps {
   retention: RetentionRecord;
@@ -21,6 +25,8 @@ export function StatusSelector({ retention }: StatusSelectorProps) {
   const firestore = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+
 
   const handleStatusChange = (newStatus: RetentionStatus) => {
     if (!firestore || !user?.uid) {
@@ -46,11 +52,25 @@ export function StatusSelector({ retention }: StatusSelectorProps) {
     });
   };
 
-  const availableActions: {
+  const handleDelete = () => {
+    if (!firestore || !user?.uid) return;
+    const retentionRef = doc(firestore, `users/${user.uid}/retenciones`, retention.id);
+    deleteDocumentNonBlocking(retentionRef);
+    toast({
+        title: 'Retención Eliminada',
+        description: `La retención ha sido eliminada permanentemente.`,
+    });
+    setIsAlertOpen(false);
+  };
+
+
+  const availableActions: ({
     label: string;
     action: () => void;
     icon: React.ReactNode;
-  }[] = [];
+    isDestructive?: boolean;
+    separator?: boolean;
+  })[] = [];
 
   if (retention.estado === 'Solicitado') {
     availableActions.push({
@@ -62,17 +82,35 @@ export function StatusSelector({ retention }: StatusSelectorProps) {
 
   if (retention.estado === 'Pendiente Anular') {
     availableActions.push({
+      label: 'Revertir a Solicitado',
+      action: () => handleStatusChange('Solicitado'),
+      icon: <RotateCcw className="mr-2 h-4 w-4" />,
+    });
+    availableActions.push({
       label: 'Marcar como Anulado',
       action: () => handleStatusChange('Anulado'),
       icon: <Archive className="mr-2 h-4 w-4" />,
     });
   }
 
+  // Always add delete option for active retentions
+  if (retention.estado !== 'Anulado') {
+    availableActions.push({
+        label: 'Eliminar Retención',
+        action: () => setIsAlertOpen(true),
+        icon: <Trash2 className="mr-2 h-4 w-4 text-destructive" />,
+        isDestructive: true,
+        separator: true,
+    });
+  }
+
+
   if (availableActions.length === 0) {
     return <StatusBadge status={retention.estado} />;
   }
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button>
@@ -80,13 +118,40 @@ export function StatusSelector({ retention }: StatusSelectorProps) {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
-        {availableActions.map(action => (
-          <DropdownMenuItem key={action.label} onSelect={action.action}>
-            {action.icon}
-            <span>{action.label}</span>
-          </DropdownMenuItem>
+        {availableActions.map((action, index) => (
+            <React.Fragment key={action.label}>
+                {action.separator && <DropdownMenuSeparator />}
+                <DropdownMenuItem 
+                    onSelect={action.action} 
+                    className={action.isDestructive ? "text-destructive focus:text-destructive focus:bg-destructive/10" : ""}
+                >
+                    {action.icon}
+                    <span>{action.label}</span>
+                </DropdownMenuItem>
+            </React.Fragment>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
+
+    <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                Esta acción es permanente. La retención se eliminará de forma definitiva.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                Sí, eliminar
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
