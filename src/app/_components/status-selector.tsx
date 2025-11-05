@@ -13,7 +13,7 @@ import { doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { RetentionRecord, RetentionStatus } from '@/lib/types';
 import { StatusBadge } from './status-badge';
-import { Archive, FileWarning, RotateCcw, Trash2 } from 'lucide-react';
+import { Archive, FileWarning, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
@@ -93,18 +93,6 @@ export function StatusSelector({ retention }: StatusSelectorProps) {
       icon: <Archive className="mr-2 h-4 w-4" />,
     });
   }
-
-  // Always add delete option for active retentions
-  if (retention.estado !== 'Anulado') {
-    availableActions.push({
-        label: 'Eliminar Retención',
-        action: () => setIsAlertOpen(true),
-        icon: <Trash2 className="mr-2 h-4 w-4 text-destructive" />,
-        isDestructive: true,
-        separator: true,
-    });
-  }
-
 
   if (availableActions.length === 0) {
     return <StatusBadge status={retention.estado} />;
