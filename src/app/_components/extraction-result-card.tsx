@@ -37,7 +37,7 @@ export function ExtractionResultCard({ data }: ExtractionResultCardProps) {
 
   // Filter out unwanted properties before rendering
   const displayableData = Object.entries(data).filter(
-    ([key]) => !['id', 'fileName', 'createdAt', 'userId'].includes(key)
+    ([key]) => !['id', 'fileName', 'createdAt', 'userId', 'estado'].includes(key)
   );
 
   const formattedText = displayableData
@@ -63,8 +63,8 @@ ${formattedText}
   };
 
   const handleShare = () => {
-    const subject = `Retención: ${data.numeroRetencion}`;
-    const body = encodeURIComponent(fullFormattedText);
+    const subject = "Anulación retención.";
+    const body = encodeURIComponent("Buenos días,\n\nFavor su ayuda anulando la retención adjunta.");
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
