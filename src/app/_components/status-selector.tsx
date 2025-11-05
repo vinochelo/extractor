@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useFirestore, useUser, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { useFirestore, useUser, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { RetentionRecord, RetentionStatus } from '@/lib/types';
@@ -53,18 +53,6 @@ export function StatusSelector({ retention }: StatusSelectorProps) {
     });
   };
 
-  const handleDelete = () => {
-    if (!firestore || !user?.uid) return;
-    const retentionRef = doc(firestore, `users/${user.uid}/retenciones`, retention.id);
-    deleteDocumentNonBlocking(retentionRef);
-    toast({
-        title: 'Retención Eliminada',
-        description: `La retención ha sido eliminada permanentemente.`,
-    });
-    setIsAlertOpen(false);
-  };
-
-
   const availableActions: ({
     label: string;
     action: () => void;
@@ -83,14 +71,14 @@ export function StatusSelector({ retention }: StatusSelectorProps) {
 
   if (retention.estado === 'Pendiente Anular') {
     availableActions.push({
+        label: 'Marcar como Anulado',
+        action: () => handleStatusChange('Anulado'),
+        icon: <Archive className="mr-2 h-4 w-4" />,
+    });
+    availableActions.push({
       label: 'Revertir a Solicitado',
       action: () => handleStatusChange('Solicitado'),
       icon: <RotateCcw className="mr-2 h-4 w-4" />,
-    });
-    availableActions.push({
-      label: 'Marcar como Anulado',
-      action: () => handleStatusChange('Anulado'),
-      icon: <Archive className="mr-2 h-4 w-4" />,
     });
   }
 
@@ -133,7 +121,6 @@ export function StatusSelector({ retention }: StatusSelectorProps) {
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
                 <AlertDialogAction
-                    onClick={handleDelete}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
                 Sí, eliminar

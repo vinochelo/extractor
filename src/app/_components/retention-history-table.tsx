@@ -195,9 +195,6 @@ export function RetentionHistoryTable() {
                     <RotateCcw className="h-4 w-4" />
                 </Button>
             )}
-            <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setRetentionToDelete(item)} title="Eliminar">
-                <Trash2 className="h-4 w-4" />
-            </Button>
             <Button
               size="sm"
               variant="outline"
@@ -205,6 +202,9 @@ export function RetentionHistoryTable() {
             >
               Verificar SRI
               <ExternalLink className="ml-2 h-3 w-3" />
+            </Button>
+            <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setRetentionToDelete(item)} title="Eliminar">
+                <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </TableCell>
@@ -240,9 +240,6 @@ export function RetentionHistoryTable() {
                 <Button size="icon" variant="ghost" onClick={() => handleRevertStatus(item)} title="Revertir a Pendiente Anular">
                     <RotateCcw className="h-4 w-4" />
                 </Button>
-                <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setRetentionToDelete(item)} title="Eliminar">
-                    <Trash2 className="h-4 w-4" />
-                </Button>
                 <Button
                     size="sm"
                     variant="outline"
@@ -250,6 +247,9 @@ export function RetentionHistoryTable() {
                     >
                     Verificar SRI
                     <ExternalLink className="ml-2 h-3 w-3" />
+                </Button>
+                <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setRetentionToDelete(item)} title="Eliminar">
+                    <Trash2 className="h-4 w-4" />
                 </Button>
             </div>
         </TableCell>
