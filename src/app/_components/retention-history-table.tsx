@@ -190,11 +190,6 @@ export function RetentionHistoryTable() {
         <TableCell>{item.fechaEmision}</TableCell>
         <TableCell className="text-right">
           <div className="flex items-center justify-end gap-2">
-            {item.estado !== 'Solicitado' && (
-                <Button size="icon" variant="ghost" onClick={() => handleRevertStatus(item)} title="Revertir Estado">
-                    <RotateCcw className="h-4 w-4" />
-                </Button>
-            )}
             <Button
               size="sm"
               variant="outline"
@@ -203,6 +198,11 @@ export function RetentionHistoryTable() {
               Verificar SRI
               <ExternalLink className="ml-2 h-3 w-3" />
             </Button>
+            {item.estado !== 'Solicitado' && (
+                <Button size="icon" variant="ghost" onClick={() => handleRevertStatus(item)} title="Revertir Estado">
+                    <RotateCcw className="h-4 w-4" />
+                </Button>
+            )}
             <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setRetentionToDelete(item)} title="Eliminar">
                 <Trash2 className="h-4 w-4" />
             </Button>
@@ -237,9 +237,6 @@ export function RetentionHistoryTable() {
         <TableCell>{item.fechaEmision}</TableCell>
         <TableCell className="text-right">
             <div className="flex items-center justify-end gap-2">
-                <Button size="icon" variant="ghost" onClick={() => handleRevertStatus(item)} title="Revertir a Pendiente Anular">
-                    <RotateCcw className="h-4 w-4" />
-                </Button>
                 <Button
                     size="sm"
                     variant="outline"
@@ -247,6 +244,9 @@ export function RetentionHistoryTable() {
                     >
                     Verificar SRI
                     <ExternalLink className="ml-2 h-3 w-3" />
+                </Button>
+                <Button size="icon" variant="ghost" onClick={() => handleRevertStatus(item)} title="Revertir a Pendiente Anular">
+                    <RotateCcw className="h-4 w-4" />
                 </Button>
                 <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setRetentionToDelete(item)} title="Eliminar">
                     <Trash2 className="h-4 w-4" />

@@ -5,7 +5,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useFirestore, useUser, updateDocumentNonBlocking } from '@/firebase';
@@ -13,7 +12,7 @@ import { doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { RetentionRecord, RetentionStatus } from '@/lib/types';
 import { StatusBadge } from './status-badge';
-import { Archive, FileWarning, RotateCcw } from 'lucide-react';
+import { Archive, FileWarning } from 'lucide-react';
 import { useState } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
@@ -26,7 +25,6 @@ export function StatusSelector({ retention }: StatusSelectorProps) {
   const firestore = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
 
 
   const handleStatusChange = (newStatus: RetentionStatus) => {
@@ -75,11 +73,6 @@ export function StatusSelector({ retention }: StatusSelectorProps) {
         action: () => handleStatusChange('Anulado'),
         icon: <Archive className="mr-2 h-4 w-4" />,
     });
-    availableActions.push({
-      label: 'Revertir a Solicitado',
-      action: () => handleStatusChange('Solicitado'),
-      icon: <RotateCcw className="mr-2 h-4 w-4" />,
-    });
   }
 
   if (availableActions.length === 0) {
@@ -109,25 +102,6 @@ export function StatusSelector({ retention }: StatusSelectorProps) {
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
-
-    <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                <AlertDialogDescription>
-                Esta acción es permanente. La retención se eliminará de forma definitiva.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                Sí, eliminar
-                </AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
-    </AlertDialog>
     </>
   );
 }
