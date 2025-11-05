@@ -27,12 +27,14 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { ExternalLink, FileWarning, Archive } from "lucide-react";
 import { format } from "date-fns";
 import type { RetentionRecord } from "@/lib/types";
+import { StatusMenu } from "./status-menu";
+import { StatusBadge } from "./status-badge";
+
 
 export function RetentionHistoryTable() {
   const { user } = useUser();
@@ -89,28 +91,15 @@ export function RetentionHistoryTable() {
         <TableCell><Skeleton className="h-4 w-32" /></TableCell>
         <TableCell><Skeleton className="h-4 w-40" /></TableCell>
         <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+        <TableCell><Skeleton className="h-6 w-24" /></TableCell>
         <TableCell><Skeleton className="h-4 w-28" /></TableCell>
         <TableCell><Skeleton className="h-4 w-28" /></TableCell>
         <TableCell><Skeleton className="h-9 w-24" /></TableCell>
       </TableRow>
     ))
   );
-  
-  const getStatusBadge = (status: string) => {
-    switch(status) {
-      case 'Solicitado':
-        return <Badge variant="default">Solicitado</Badge>;
-      case 'Pendiente Anular':
-        return <Badge variant="secondary">Pendiente Anular</Badge>;
-      case 'Anulado':
-        return <Badge variant="destructive">Anulado</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
 
-  const renderTableRows = (items: RetentionRecord[]) => {
+  const renderTableRows = (items: RetentionRecord[], isAnulatedSection = false) => {
     if (items.length === 0) {
       return (
         <TableRow>
@@ -122,22 +111,25 @@ export function RetentionHistoryTable() {
     }
     return items.map((item: RetentionRecord) => (
       <TableRow key={item.id}>
-        <TableCell><Badge variant="secondary">{item.numeroRetencion}</Badge></TableCell>
+        <TableCell className="font-mono">{item.numeroRetencion}</TableCell>
         <TableCell className="font-medium">{item.razonSocialProveedor}</TableCell>
         <TableCell className="font-mono text-xs">{item.numeroAutorizacion}</TableCell>
         <TableCell>{item.numeroFactura}</TableCell>
-        <TableCell>{getStatusBadge(item.estado)}</TableCell>
+        <TableCell><StatusBadge status={item.estado} /></TableCell>
         <TableCell>{formatDate(item.createdAt)}</TableCell>
         <TableCell>{item.fechaEmision}</TableCell>
-        <TableCell>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handleVerifySRI(item.numeroAutorizacion)}
-          >
-            Verificar en SRI
-            <ExternalLink className="ml-2 h-3 w-3" />
-          </Button>
+        <TableCell className="text-right">
+            <div className="flex items-center justify-end gap-2">
+                <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleVerifySRI(item.numeroAutorizacion)}
+                    >
+                    Verificar SRI
+                    <ExternalLink className="ml-2 h-3 w-3" />
+                </Button>
+                {!isAnulatedSection && <StatusMenu retention={item} />}
+            </div>
         </TableCell>
       </TableRow>
     ));
@@ -149,7 +141,7 @@ export function RetentionHistoryTable() {
       <CardHeader>
         <CardTitle>Historial de Retenciones</CardTitle>        
         <CardDescription>
-          Aquí puedes ver todas las retenciones que has procesado.
+          Aquí puedes ver y gestionar todas las retenciones que has procesado.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -171,7 +163,7 @@ export function RetentionHistoryTable() {
                 <TableHead>Estado</TableHead>
                 <TableHead>Fecha Creación</TableHead>
                 <TableHead>Fecha Emisión</TableHead>
-                <TableHead>Acciones</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -180,37 +172,39 @@ export function RetentionHistoryTable() {
           </Table>
         </div>
 
-        <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="anuladas">
-                <AccordionTrigger>
-                    <div className="flex items-center gap-2">
-                        <Archive className="h-4 w-4" />
-                        Mostrar Retenciones Anuladas ({anulatedRetenciones.length})
-                    </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                    <div className="border rounded-lg">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Nro. Retención</TableHead>
-                                    <TableHead>Razón Social Proveedor</TableHead>
-                                    <TableHead>Autorización</TableHead>
-                                    <TableHead>Nro. Factura</TableHead>
-                                    <TableHead>Estado</TableHead>
-                                    <TableHead>Fecha Creación</TableHead>
-                                    <TableHead>Fecha Emisión</TableHead>
-                                    <TableHead>Acciones</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {loading ? null : renderTableRows(anulatedRetenciones)}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
+        {anulatedRetenciones.length > 0 && (
+            <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="anuladas">
+                    <AccordionTrigger>
+                        <div className="flex items-center gap-2">
+                            <Archive className="h-4 w-4" />
+                            Mostrar Retenciones Anuladas ({anulatedRetenciones.length})
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                        <div className="border rounded-lg">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Nro. Retención</TableHead>
+                                        <TableHead>Razón Social Proveedor</TableHead>
+                                        <TableHead>Autorización</TableHead>
+                                        <TableHead>Nro. Factura</TableHead>
+                                        <TableHead>Estado</TableHead>
+                                        <TableHead>Fecha Creación</TableHead>
+                                        <TableHead>Fecha Emisión</TableHead>
+                                        <TableHead className="text-right">Acciones</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {loading ? null : renderTableRows(anulatedRetenciones, true)}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+            </Accordion>
+        )}
 
       </CardContent>
     </Card>
