@@ -1,7 +1,8 @@
 "use client";
 
-import { useAuth } from "@/firebase/use-auth";
-import { useRetenciones } from "@/firebase/use-retenciones";
+import { useUser, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy, where } from "firebase/firestore";
+import { useFirestore } from "@/firebase/provider";
 import {
   Table,
   TableBody,
@@ -22,14 +23,24 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, ExternalLink, FileWarning } from "lucide-react";
+import { ExternalLink, FileWarning } from "lucide-react";
 import { format } from "date-fns";
 import type { RetentionRecord } from "@/lib/types";
 
 export function RetentionHistoryTable() {
-  const { user } = useAuth();
-  const { retenciones, loading, error } = useRetenciones(user?.uid || null);
+  const { user } = useUser();
+  const firestore = useFirestore();
   const { toast } = useToast();
+
+  const retencionesQuery = useMemoFirebase(() => {
+    if (!firestore || !user?.uid) return null;
+    return query(
+      collection(firestore, `users/${user.uid}/retenciones`),
+      orderBy("createdAt", "desc")
+    );
+  }, [firestore, user?.uid]);
+
+  const { data: retenciones, isLoading: loading, error } = useCollection<RetentionRecord>(retencionesQuery);
 
   const handleVerifySRI = (autorizacion: string) => {
     navigator.clipboard.writeText(autorizacion).then(() => {
@@ -102,7 +113,7 @@ export function RetentionHistoryTable() {
             </TableHeader>
             <TableBody>
               {loading ? renderSkeleton() : 
-                retenciones.length > 0 ? (
+                retenciones && retenciones.length > 0 ? (
                   retenciones.map((item: RetentionRecord) => (
                     <TableRow key={item.id}>
                       <TableCell><Badge variant="secondary">{item.numeroRetencion}</Badge></TableCell>

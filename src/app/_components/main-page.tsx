@@ -5,11 +5,11 @@ import { PdfUploader } from "./pdf-uploader";
 import { ExtractionResultCard } from "./extraction-result-card";
 import { RetentionHistoryTable } from "./retention-history-table";
 import { extractAndSaveRetention } from "@/app/actions";
-import { useAuth } from "@/firebase/use-auth";
+import { useUser } from "@/firebase";
 import { type RetentionData } from "@/lib/types";
 
 export function MainPage() {
-  const { user } = useAuth();
+  const { user, isUserLoading } = useUser();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +78,7 @@ export function MainPage() {
         onFileChange={handleFileChange}
         onFileRemove={handleRemoveFile}
         onSubmit={handleSubmit}
-        loading={loading}
+        loading={loading || isUserLoading}
         error={error}
       />
 
