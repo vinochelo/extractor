@@ -1,21 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PdfUploader } from "./pdf-uploader";
 import { ExtractionResultCard } from "./extraction-result-card";
 import { RetentionHistoryTable } from "./retention-history-table";
 import { extractData } from "@/app/actions";
-import { useUser, useFirestore, addDocumentNonBlocking } from "@/firebase";
+import { useUser, useFirestore, addDocumentNonBlocking, useAuth, initiateAnonymousSignIn } from "@/firebase";
 import { collection } from "firebase/firestore";
-import { type RetentionData } from "@/lib/types";
+import type { RetentionRecord } from "@/lib/types";
 
 export function MainPage() {
   const { user, isUserLoading } = useUser();
+  const auth = useAuth();
   const firestore = useFirestore();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [extractedData, setExtractedData] = useState<RetentionData | null>(null);
+  const [extractedData, setExtractedData] = useState<RetentionRecord | null>(null);
+
+  useEffect(() => {
+    // Automatically sign in the user anonymously if not logged in and not loading.
+    if (!user && !isUserLoading && auth) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [user, isUserLoading, auth]);
+
 
   const handleFileChange = (selectedFile: File) => {
     setFile(selectedFile);
@@ -50,18 +59,22 @@ export function MainPage() {
       });
 
       if (result.success) {
-        const retentionRecord = {
+        const retentionRecord: Omit<RetentionRecord, 'id'> = {
           ...result.data,
           fileName: file.name,
-          createdAt: new Date(),
+          createdAt: new Date(), // Use JS Date object, Firestore will convert it.
           userId: user.uid,
         };
-
+        
         const retencionesCollection = collection(firestore, 'users', user.uid, 'retenciones');
-        addDocumentNonBlocking(retencionesCollection, retentionRecord);
+        // The addDoc promise resolves with a DocumentReference
+        const docRef = await addDocumentNonBlocking(retencionesCollection, retentionRecord);
 
-        setExtractedData(retentionRecord as any);
-        setFile(null);
+        // Show the results card immediately with the data we have.
+        // We can use the client-generated data for the UI, as it will be consistent
+        // with what's being saved to Firestore.
+        setExtractedData({ ...retentionRecord, id: docRef ? docRef.id : 'temp-id' });
+        setFile(null); // Clear the file input on success
       } else {
         setError(result.error);
       }
