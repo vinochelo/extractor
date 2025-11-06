@@ -64,7 +64,16 @@ ${formattedText}
 
   const handleShare = () => {
     const subject = "Anulación retención.";
-    const body = encodeURIComponent("Buenos días,\n\nFavor su ayuda anulando la retención adjunta.");
+    const emailBody = `Buenos días,
+
+Favor su ayuda anulando la retención adjunta.
+
+Detalles de la retención:
+--------------------------------
+${formattedText}
+--------------------------------
+`;
+    const body = encodeURIComponent(emailBody);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
