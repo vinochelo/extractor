@@ -30,6 +30,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  devIndicators: {
+    buildActivity: false,
+  },
+  // Adding allowedDevOrigins to solve the cross-origin warning
+  experimental: {
+    allowedDevOrigins: [
+      'https://6000-firebase-studio-1762372360685.cluster-lr6dwlc2lzbcctqhqorax5zmro.cloudworkstations.dev',
+    ],
+  },
 };
 
 export default nextConfig;
