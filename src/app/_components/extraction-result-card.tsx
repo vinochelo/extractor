@@ -11,11 +11,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Copy, Mail, Check } from "lucide-react";
-import { RetentionData } from "@/lib/types";
+import { RetentionData, RetentionRecord } from "@/lib/types";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
+
 
 interface ExtractionResultCardProps {
-  data: RetentionData;
+  data: RetentionRecord;
 }
 
 // Helper to format keys for display
@@ -40,19 +42,19 @@ export function ExtractionResultCard({ data }: ExtractionResultCardProps) {
     ([key]) => !['id', 'fileName', 'createdAt', 'userId', 'estado'].includes(key)
   );
 
-  const formattedText = displayableData
+  const formattedTextForEmail = displayableData
     .map(([key, value]) => `${formatDisplayKey(key)}: ${value}`)
     .join('\n');
-
-  const fullFormattedText = `
+    
+  const fullFormattedTextForCopy = `
 Resumen de Retención:
 --------------------------------
-${formattedText}
+${formattedTextForEmail}
 --------------------------------
   `.trim();
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(fullFormattedText).then(() => {
+    navigator.clipboard.writeText(fullFormattedTextForCopy).then(() => {
       setCopied(true);
       toast({
         title: "Copiado al portapapeles",
@@ -68,9 +70,9 @@ ${formattedText}
 
 Favor su ayuda anulando la retención adjunta.
 
-Detalles de la retención:
+Detalles de la retención a anular:
 --------------------------------
-${formattedText}
+${formattedTextForEmail}
 --------------------------------
 `;
     const body = encodeURIComponent(emailBody);
@@ -88,9 +90,15 @@ ${formattedText}
       <CardContent className="grid gap-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           {displayableData.map(([key, value]) => (
-            <div key={key} className="p-3 bg-muted/50 rounded-lg">
+            <div key={key} className={cn(
+              "p-3 bg-muted/50 rounded-lg",
+              key === 'numeroRetencion' && 'sm:col-span-2'
+            )}>
               <p className="font-semibold text-muted-foreground">{formatDisplayKey(key)}</p>
-              <p className="font-mono text-foreground break-words">{value}</p>
+              <p className={cn(
+                "font-mono text-foreground break-words",
+                key === 'numeroRetencion' && 'text-xl font-bold tracking-wider'
+              )}>{value}</p>
             </div>
           ))}
         </div>
