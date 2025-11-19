@@ -263,7 +263,7 @@ Agradecemos su pronta gestión.
         <TableCell className="font-medium">
           {item.razonSocialProveedor}
         </TableCell>
-        <TableCell className="font-mono text-xs">
+        <TableCell className="font-mono text-[10px]">
           {item.numeroAutorizacion}
         </TableCell>
         <TableCell>{item.numeroFactura}</TableCell>
@@ -336,7 +336,7 @@ Agradecemos su pronta gestión.
         <TableCell className="font-medium">
           {item.razonSocialProveedor}
         </TableCell>
-        <TableCell className="font-mono text-xs">
+        <TableCell className="font-mono text-[10px]">
           {item.numeroAutorizacion}
         </TableCell>
         <TableCell>{item.numeroFactura}</TableCell>
