@@ -96,7 +96,7 @@ export function RetentionHistoryTable() {
 
   const handleShareForVoiding = (data: RetentionRecord) => {
     const formattedTextForEmail = generateFormattedText(data);
-    const subject = `Solicitud de Anulación - ${data.numeroRetencion}`;
+    const subject = "Anulación de Retención";
     const emailBody = `Buenos días,
 
 Favor su ayuda anulando la retención adjunta.
@@ -114,7 +114,7 @@ Saludos.
 
   const handleRequestSriAcceptance = (data: RetentionRecord) => {
     const formattedTextForEmail = generateFormattedText(data);
-    const subject = `Solicitud de Aceptación de Anulación - Retención Nro. ${data.numeroRetencion}`;
+    const subject = `Solicitud de Anulación - ${data.numeroRetencion}`;
     const emailBody = `Estimados ${data.razonSocialProveedor},
 
 Junto con saludar, les solicitamos por favor aceptar la anulación de la siguiente retención en el portal del SRI.
