@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Mail, Check } from "lucide-react";
-import { RetentionData, RetentionRecord } from "@/lib/types";
+import { Copy, Mail, Check, Send } from "lucide-react";
+import { RetentionRecord } from "@/lib/types";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -64,7 +64,7 @@ ${formattedTextForEmail}
     });
   };
 
-  const handleShare = () => {
+  const handleShareForVoiding = () => {
     const subject = "Anulación retención.";
     const emailBody = `Buenos días,
 
@@ -74,6 +74,27 @@ Detalles de la retención a anular:
 --------------------------------
 ${formattedTextForEmail}
 --------------------------------
+
+Saludos.
+`;
+    const body = encodeURIComponent(emailBody);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  const handleRequestSriAcceptance = () => {
+    const subject = `Solicitud de Aceptación de Anulación - Retención Nro. ${data.numeroRetencion}`;
+    const emailBody = `Estimados ${data.razonSocialProveedor},
+
+Junto con saludar, les solicitamos por favor aceptar la anulación de la siguiente retención en el portal del SRI.
+
+Detalles de la retención:
+--------------------------------
+${formattedTextForEmail}
+--------------------------------
+
+Agradecemos su pronta gestión.
+
+Saludos cordiales.
 `;
     const body = encodeURIComponent(emailBody);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
@@ -103,10 +124,14 @@ ${formattedTextForEmail}
           ))}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end gap-2">
-        <Button variant="outline" onClick={handleShare}>
+      <CardFooter className="flex flex-wrap justify-end gap-2">
+        <Button variant="outline" onClick={handleShareForVoiding}>
           <Mail className="mr-2" />
-          Compartir por Email
+          Email para Anular
+        </Button>
+        <Button variant="outline" onClick={handleRequestSriAcceptance}>
+          <Send className="mr-2" />
+          Solicitar Aceptación SRI
         </Button>
         <Button onClick={handleCopy}>
           {copied ? <Check className="mr-2" /> : <Copy className="mr-2" />}
