@@ -39,18 +39,31 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { ExternalLink, FileWarning, Archive, RotateCcw, Trash2 } from 'lucide-react';
+import { ExternalLink, FileWarning, Archive, RotateCcw, Trash2, Mail, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import type { RetentionRecord, RetentionStatus } from '@/lib/types';
 import { StatusSelector } from './status-selector';
 import { StatusBadge } from './status-badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+// Helper to format keys for display
+const formatDisplayKey = (key: string): string => {
+    const keyMap: { [key: string]: string } = {
+      numeroRetencion: "Nro. Retención",
+      numeroAutorizacion: "Autorización",
+      razonSocialProveedor: "Razón Social Proveedor",
+      rucProveedor: "RUC Proveedor",
+      numeroFactura: "Nro. Factura",
+      fechaEmision: "Fecha Emisión",
+    };
+    return keyMap[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+};
 
 export function RetentionHistoryTable() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
   const [retentionToDelete, setRetentionToDelete] = useState<RetentionRecord | null>(null);
-
 
   const retencionesQuery = useMemoFirebase(() => {
     if (!firestore || !user?.uid) return null;
@@ -71,6 +84,52 @@ export function RetentionHistoryTable() {
     const anulated = retenciones?.filter(r => r.estado === 'Anulado') || [];
     return { activeRetenciones: active, anulatedRetenciones: anulated };
   }, [retenciones]);
+
+  const generateFormattedText = (data: RetentionRecord) => {
+    const displayableData = Object.entries(data).filter(
+        ([key]) => !['id', 'fileName', 'createdAt', 'userId', 'estado'].includes(key)
+    );
+    return displayableData
+      .map(([key, value]) => `${formatDisplayKey(key)}: ${value}`)
+      .join('\n');
+  }
+
+  const handleShareForVoiding = (data: RetentionRecord) => {
+    const formattedTextForEmail = generateFormattedText(data);
+    const subject = "Anulación retención.";
+    const emailBody = `Buenos días,
+
+Favor su ayuda anulando la retención adjunta.
+
+Detalles de la retención a anular:
+--------------------------------
+${formattedTextForEmail}
+--------------------------------
+
+Saludos.
+`;
+    const body = encodeURIComponent(emailBody);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  const handleRequestSriAcceptance = (data: RetentionRecord) => {
+    const formattedTextForEmail = generateFormattedText(data);
+    const subject = `Solicitud de Aceptación de Anulación - Retención Nro. ${data.numeroRetencion}`;
+    const emailBody = `Estimados ${data.razonSocialProveedor},
+
+Junto con saludar, les solicitamos por favor aceptar la anulación de la siguiente retención en el portal del SRI.
+
+Detalles de la retención:
+--------------------------------
+${formattedTextForEmail}
+--------------------------------
+
+Agradecemos su pronta gestión.
+`;
+    const body = encodeURIComponent(emailBody);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
 
   const handleVerifySRI = (autorizacion: string) => {
     navigator.clipboard.writeText(autorizacion).then(() => {
@@ -136,6 +195,7 @@ export function RetentionHistoryTable() {
   const renderSkeleton = () =>
     Array.from({ length: 3 }).map((_, i) => (
       <TableRow key={i}>
+        <TableCell><Skeleton className="h-9 w-20" /></TableCell>
         <TableCell>
           <Skeleton className="h-4 w-24" />
         </TableCell>
@@ -167,7 +227,7 @@ export function RetentionHistoryTable() {
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={8} className="h-24 text-center">
+          <TableCell colSpan={9} className="h-24 text-center">
             No hay retenciones en esta categoría.
           </TableCell>
         </TableRow>
@@ -175,6 +235,30 @@ export function RetentionHistoryTable() {
     }
     return items.map((item: RetentionRecord) => (
       <TableRow key={item.id}>
+        <TableCell>
+            <div className="flex items-center gap-1">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => handleShareForVoiding(item)}>
+                            <Mail className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Email para Anular</p>
+                    </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => handleRequestSriAcceptance(item)}>
+                            <Send className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Solicitar Aceptación SRI</p>
+                    </TooltipContent>
+                </Tooltip>
+            </div>
+        </TableCell>
         <TableCell className="font-mono">{item.numeroRetencion}</TableCell>
         <TableCell className="font-medium">
           {item.razonSocialProveedor}
@@ -216,7 +300,7 @@ export function RetentionHistoryTable() {
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={8} className="h-24 text-center">
+          <TableCell colSpan={9} className="h-24 text-center">
             No hay retenciones en esta categoría.
           </TableCell>
         </TableRow>
@@ -224,6 +308,30 @@ export function RetentionHistoryTable() {
     }
     return items.map((item: RetentionRecord) => (
       <TableRow key={item.id}>
+         <TableCell>
+            <div className="flex items-center gap-1">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => handleShareForVoiding(item)}>
+                            <Mail className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Email para Anular</p>
+                    </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => handleRequestSriAcceptance(item)}>
+                            <Send className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Solicitar Aceptación SRI</p>
+                    </TooltipContent>
+                </Tooltip>
+            </div>
+        </TableCell>
         <TableCell className="font-mono">{item.numeroRetencion}</TableCell>
         <TableCell className="font-medium">
           {item.razonSocialProveedor}
@@ -258,7 +366,7 @@ export function RetentionHistoryTable() {
   }
 
   return (
-    <>
+    <TooltipProvider>
     <Card className="w-full max-w-7xl mx-auto">
       <CardHeader>
         <CardTitle>Historial de Retenciones</CardTitle>
@@ -278,6 +386,7 @@ export function RetentionHistoryTable() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Emails</TableHead>
                 <TableHead>Nro. Retención</TableHead>
                 <TableHead>Razón Social Proveedor</TableHead>
                 <TableHead>Autorización</TableHead>
@@ -308,6 +417,7 @@ export function RetentionHistoryTable() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead>Emails</TableHead>
                         <TableHead>Nro. Retención</TableHead>
                         <TableHead>Razón Social Proveedor</TableHead>
                         <TableHead>Autorización</TableHead>
@@ -348,6 +458,6 @@ export function RetentionHistoryTable() {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-    </>
+    </TooltipProvider>
   );
 }
