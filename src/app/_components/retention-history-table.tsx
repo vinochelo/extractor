@@ -162,6 +162,16 @@ Agradecemos su pronta gestión.
     });
     setRetentionToDelete(null);
   };
+  
+  const handleVerifySri = (numeroAutorizacion: string) => {
+    navigator.clipboard.writeText(numeroAutorizacion).then(() => {
+      toast({
+        title: 'Copiado al portapapeles',
+        description: 'El número de autorización ha sido copiado.',
+      });
+      window.open('https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/publico/validezComprobantes.jsf?pathMPT=Facturaci%F3n%20Electr%F3nica&actualMPT=Validez%20de%20comprobantes', '_blank', 'noopener,noreferrer');
+    });
+  };
 
 
   const formatDate = (date: any) => {
@@ -259,12 +269,10 @@ Agradecemos su pronta gestión.
         <TableCell>{formatDate(item.createdAt)}</TableCell>
         <TableCell>{item.fechaEmision}</TableCell>
         <TableCell>
-            <a href="https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/publico/validezComprobantes.jsf?pathMPT=Facturaci%F3n%20Electr%F3nica&actualMPT=Validez%20de%20comprobantes" target="_blank" rel="noopener noreferrer">
-                <Button size="sm" variant="outline">
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Verificar en SRI
-                </Button>
-            </a>
+            <Button size="sm" variant="outline" onClick={() => handleVerifySri(item.numeroAutorizacion)}>
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Verificar en SRI
+            </Button>
         </TableCell>
         <TableCell className="text-right">
           <div className="flex items-center justify-end gap-2">
@@ -344,12 +352,10 @@ Agradecemos su pronta gestión.
         <TableCell>{formatDate(item.createdAt)}</TableCell>
         <TableCell>{item.fechaEmision}</TableCell>
         <TableCell>
-            <a href="https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/publico/validezComprobantes.jsf?pathMPT=Facturaci%F3n%20Electr%F3nica&actualMPT=Validez%20de%20comprobantes" target="_blank" rel="noopener noreferrer">
-                <Button size="sm" variant="outline">
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Verificar en SRI
-                </Button>
-            </a>
+            <Button size="sm" variant="outline" onClick={() => handleVerifySri(item.numeroAutorizacion)}>
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Verificar en SRI
+            </Button>
         </TableCell>
         <TableCell className="text-right">
             <div className="flex items-center justify-end gap-2">
