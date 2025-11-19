@@ -34,14 +34,23 @@ const formatDisplayKey = (key: string): string => {
   return keyMap[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
 };
 
+const desiredOrder: (keyof RetentionRecord)[] = [
+    'numeroRetencion',
+    'numeroAutorizacion',
+    'razonSocialProveedor',
+    'rucProveedor',
+    'numeroFactura',
+    'fechaEmision'
+];
+
 export function ExtractionResultCard({ data }: ExtractionResultCardProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
-  // Filter out unwanted properties before rendering
-  const displayableData = Object.entries(data).filter(
-    ([key]) => !['id', 'fileName', 'createdAt', 'userId', 'estado'].includes(key)
-  );
+  // Filter out unwanted properties and sort them
+  const displayableData = desiredOrder
+    .map(key => [key, data[key]])
+    .filter(([key, value]) => value !== undefined && value !== null) as [string, any][];
 
   const formattedTextForEmail = displayableData
     .map(([key, value]) => `${formatDisplayKey(key)}: ${value}`)

@@ -60,6 +60,15 @@ const formatDisplayKey = (key: string): string => {
     return keyMap[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
 };
 
+const desiredOrder: (keyof RetentionRecord)[] = [
+    'numeroRetencion',
+    'numeroAutorizacion',
+    'razonSocialProveedor',
+    'rucProveedor',
+    'numeroFactura',
+    'fechaEmision'
+];
+
 export function RetentionHistoryTable() {
   const { user } = useUser();
   const firestore = useFirestore();
@@ -87,11 +96,15 @@ export function RetentionHistoryTable() {
   }, [retenciones]);
 
   const generateFormattedText = (data: RetentionRecord) => {
-    const displayableData = Object.entries(data).filter(
-        ([key]) => !['id', 'fileName', 'createdAt', 'userId', 'estado'].includes(key)
-    );
-    return displayableData
-      .map(([key, value]) => `${formatDisplayKey(key)}: ${value}`)
+    return desiredOrder
+      .map(key => {
+          const value = data[key];
+          if (value !== undefined && value !== null) {
+              return `${formatDisplayKey(key)}: ${value}`;
+          }
+          return null;
+      })
+      .filter(Boolean)
       .join('\n');
   }
 
