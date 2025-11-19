@@ -142,8 +142,6 @@ export function MainPage() {
       </div>
 
       <div className="space-y-12">
-        <EmailImporter />
-
         <PdfUploader
           file={file}
           onFileChange={handleFileChange}
@@ -155,6 +153,8 @@ export function MainPage() {
         />
 
         {extractedData && <ExtractionResultCard data={extractedData} />}
+        
+        <EmailImporter />
       </div>
     </main>
   );
