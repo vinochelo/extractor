@@ -29,7 +29,7 @@ export function EmailImporter() {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        const requiredHeaders = ["ruc", "email"];
+        const requiredHeaders = ["RUC", "CORREO"];
         const headers = results.meta.fields || [];
         const hasRequiredHeaders = requiredHeaders.every(h => headers.includes(h));
 
@@ -45,8 +45,8 @@ export function EmailImporter() {
         const emailMap: Record<string, string> = {};
         let validRows = 0;
         results.data.forEach((row: any) => {
-            if (row.ruc && row.email) {
-                emailMap[row.ruc.trim()] = row.email.trim();
+            if (row.RUC && row.CORREO) {
+                emailMap[row.RUC.trim()] = row.CORREO.trim();
                 validRows++;
             }
         });
@@ -81,7 +81,7 @@ export function EmailImporter() {
         <CardHeader>
             <CardTitle>Importar Correos de Proveedores</CardTitle>
             <CardDescription>
-                Sube un archivo .csv con las columnas 'ruc' y 'email' para autocompletar el destinatario en las solicitudes al SRI. Los datos se guardan localmente en tu navegador.
+                Sube un archivo .csv con las columnas 'RUC' y 'CORREO' para autocompletar el destinatario en las solicitudes al SRI. Los datos se guardan localmente en tu navegador.
             </CardDescription>
         </CardHeader>
         <CardContent>
