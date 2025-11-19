@@ -130,20 +130,6 @@ Agradecemos su pronta gestión.
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
-
-  const handleVerifySRI = (autorizacion: string) => {
-    navigator.clipboard.writeText(autorizacion).then(() => {
-      toast({
-        title: 'Autorización Copiada',
-        description: 'El número de autorización se ha copiado al portapapeles.',
-      });
-      window.open(
-        'https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/publico/validezComprobantes.jsf',
-        '_blank'
-      );
-    });
-  };
-
   const handleRevertStatus = (retention: RetentionRecord) => {
     if (!firestore || !user?.uid) return;
 
@@ -200,9 +186,6 @@ Agradecemos su pronta gestión.
           <Skeleton className="h-4 w-24" />
         </TableCell>
         <TableCell>
-          <Skeleton className="h-4 w-32" />
-        </TableCell>
-        <TableCell>
           <Skeleton className="h-4 w-40" />
         </TableCell>
         <TableCell>
@@ -227,7 +210,7 @@ Agradecemos su pronta gestión.
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={9} className="h-24 text-center">
+          <TableCell colSpan={8} className="h-24 text-center">
             No hay retenciones en esta categoría.
           </TableCell>
         </TableRow>
@@ -263,9 +246,6 @@ Agradecemos su pronta gestión.
         <TableCell className="font-medium">
           {item.razonSocialProveedor}
         </TableCell>
-        <TableCell className="font-mono text-[10px]">
-          {item.numeroAutorizacion}
-        </TableCell>
         <TableCell>{item.numeroFactura}</TableCell>
         <TableCell>
           <StatusSelector retention={item} />
@@ -274,22 +254,28 @@ Agradecemos su pronta gestión.
         <TableCell>{item.fechaEmision}</TableCell>
         <TableCell className="text-right">
           <div className="flex items-center justify-end gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleVerifySRI(item.numeroAutorizacion)}
-            >
-              Verificar SRI
-              <ExternalLink className="ml-2 h-3 w-3" />
-            </Button>
             {item.estado !== 'Solicitado' && (
-                <Button size="icon" variant="ghost" onClick={() => handleRevertStatus(item)} title="Revertir Estado">
-                    <RotateCcw className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="icon" variant="ghost" onClick={() => handleRevertStatus(item)}>
+                          <RotateCcw className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Revertir Estado</p>
+                    </TooltipContent>
+                </Tooltip>
             )}
-            <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setRetentionToDelete(item)} title="Eliminar">
-                <Trash2 className="h-4 w-4" />
-            </Button>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setRetentionToDelete(item)}>
+                      <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Eliminar</p>
+                </TooltipContent>
+            </Tooltip>
           </div>
         </TableCell>
       </TableRow>
@@ -300,7 +286,7 @@ Agradecemos su pronta gestión.
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={9} className="h-24 text-center">
+          <TableCell colSpan={8} className="h-24 text-center">
             No hay retenciones en esta categoría.
           </TableCell>
         </TableRow>
@@ -336,29 +322,32 @@ Agradecemos su pronta gestión.
         <TableCell className="font-medium">
           {item.razonSocialProveedor}
         </TableCell>
-        <TableCell className="font-mono text-[10px]">
-          {item.numeroAutorizacion}
-        </TableCell>
         <TableCell>{item.numeroFactura}</TableCell>
         <TableCell><StatusBadge status={item.estado} /></TableCell>
         <TableCell>{formatDate(item.createdAt)}</TableCell>
         <TableCell>{item.fechaEmision}</TableCell>
         <TableCell className="text-right">
             <div className="flex items-center justify-end gap-2">
-                <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleVerifySRI(item.numeroAutorizacion)}
-                    >
-                    Verificar SRI
-                    <ExternalLink className="ml-2 h-3 w-3" />
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => handleRevertStatus(item)} title="Revertir a Pendiente Anular">
-                    <RotateCcw className="h-4 w-4" />
-                </Button>
-                <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setRetentionToDelete(item)} title="Eliminar">
-                    <Trash2 className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="icon" variant="ghost" onClick={() => handleRevertStatus(item)}>
+                          <RotateCcw className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Revertir a Pendiente Anular</p>
+                    </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setRetentionToDelete(item)}>
+                          <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Eliminar</p>
+                    </TooltipContent>
+                </Tooltip>
             </div>
         </TableCell>
       </TableRow>
@@ -389,7 +378,6 @@ Agradecemos su pronta gestión.
                 <TableHead>Emails</TableHead>
                 <TableHead>Nro. Retención</TableHead>
                 <TableHead>Razón Social Proveedor</TableHead>
-                <TableHead>Autorización</TableHead>
                 <TableHead>Nro. Factura</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Fecha Creación</TableHead>
@@ -420,7 +408,6 @@ Agradecemos su pronta gestión.
                         <TableHead>Emails</TableHead>
                         <TableHead>Nro. Retención</TableHead>
                         <TableHead>Razón Social Proveedor</TableHead>
-                        <TableHead>Autorización</TableHead>
                         <TableHead>Nro. Factura</TableHead>
                         <TableHead>Estado</TableHead>
                         <TableHead>Fecha Creación</TableHead>
