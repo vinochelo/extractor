@@ -203,6 +203,9 @@ Agradecemos su pronta gestión.
         <TableCell>
           <Skeleton className="h-9 w-24" />
         </TableCell>
+        <TableCell>
+          <Skeleton className="h-9 w-32" />
+        </TableCell>
       </TableRow>
     ));
 
@@ -210,7 +213,7 @@ Agradecemos su pronta gestión.
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={8} className="h-24 text-center">
+          <TableCell colSpan={9} className="h-24 text-center">
             No hay retenciones en esta categoría.
           </TableCell>
         </TableRow>
@@ -278,6 +281,23 @@ Agradecemos su pronta gestión.
             </Tooltip>
           </div>
         </TableCell>
+        <TableCell>
+            <div className="flex items-center gap-2">
+                <span className="font-mono text-xs">{item.numeroAutorizacion}</span>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <a href={`https://declaraciones.sri.gob.ec/comprobantes-electronicos-consultas/pages/publico/ruc-clave-acceso.jspa?ruc=${item.rucProveedor}&claveAcceso=${item.numeroAutorizacion}`} target="_blank" rel="noopener noreferrer">
+                            <Button size="icon" variant="ghost">
+                                <ExternalLink className="h-4 w-4" />
+                            </Button>
+                        </a>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Verificar en SRI</p>
+                    </TooltipContent>
+                </Tooltip>
+            </div>
+        </TableCell>
       </TableRow>
     ));
   };
@@ -286,7 +306,7 @@ Agradecemos su pronta gestión.
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={8} className="h-24 text-center">
+          <TableCell colSpan={9} className="h-24 text-center">
             No hay retenciones en esta categoría.
           </TableCell>
         </TableRow>
@@ -350,6 +370,23 @@ Agradecemos su pronta gestión.
                 </Tooltip>
             </div>
         </TableCell>
+        <TableCell>
+            <div className="flex items-center gap-2">
+                <span className="font-mono text-xs">{item.numeroAutorizacion}</span>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <a href={`https://declaraciones.sri.gob.ec/comprobantes-electronicos-consultas/pages/publico/ruc-clave-acceso.jspa?ruc=${item.rucProveedor}&claveAcceso=${item.numeroAutorizacion}`} target="_blank" rel="noopener noreferrer">
+                            <Button size="icon" variant="ghost">
+                                <ExternalLink className="h-4 w-4" />
+                            </Button>
+                        </a>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Verificar en SRI</p>
+                    </TooltipContent>
+                </Tooltip>
+            </div>
+        </TableCell>
       </TableRow>
     ));
   }
@@ -383,6 +420,7 @@ Agradecemos su pronta gestión.
                 <TableHead>Fecha Creación</TableHead>
                 <TableHead>Fecha Emisión</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
+                <TableHead>Autorización</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -413,6 +451,7 @@ Agradecemos su pronta gestión.
                         <TableHead>Fecha Creación</TableHead>
                         <TableHead>Fecha Emisión</TableHead>
                         <TableHead className="text-right">Acciones</TableHead>
+                        <TableHead>Autorización</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
