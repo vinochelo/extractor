@@ -116,7 +116,7 @@ Saludos.
   const handleRequestSriAcceptance = (data: RetentionRecord) => {
     const providerEmail = getEmailByRuc(data.rucProveedor);
     const formattedTextForEmail = generateFormattedText(data);
-    const subject = `Solicitud de Anulación - ${data.numeroRetencion}`;
+    const subject = `Anulación retención ${data.numeroRetencion}`;
     const emailBody = `Estimados ${data.razonSocialProveedor},
 
 Junto con saludar, les solicitamos por favor aceptar la anulación de la siguiente retención en el portal del SRI.
@@ -193,7 +193,12 @@ Agradecemos su pronta gestión.
   const renderSkeleton = () =>
     Array.from({ length: 3 }).map((_, i) => (
       <TableRow key={i}>
-        <TableCell><Skeleton className="h-9 w-20" /></TableCell>
+        <TableCell>
+            <div className="flex items-center gap-1">
+                <Skeleton className="h-9 w-9" />
+                <Skeleton className="h-9 w-9" />
+            </div>
+        </TableCell>
         <TableCell>
           <Skeleton className="h-4 w-24" />
         </TableCell>

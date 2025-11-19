@@ -84,7 +84,7 @@ Saludos.
 
   const handleRequestSriAcceptance = () => {
     const providerEmail = getEmailByRuc(data.rucProveedor);
-    const subject = `Solicitud de Anulación - ${data.numeroRetencion}`;
+    const subject = `Anulación retención ${data.numeroRetencion}`;
     const emailBody = `Estimados ${data.razonSocialProveedor},
 
 Junto con saludar, les solicitamos por favor aceptar la anulación de la siguiente retención en el portal del SRI.
