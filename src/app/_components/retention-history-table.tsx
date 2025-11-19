@@ -259,7 +259,7 @@ Agradecemos su pronta gestión.
         <TableCell>{formatDate(item.createdAt)}</TableCell>
         <TableCell>{item.fechaEmision}</TableCell>
         <TableCell>
-            <a href={`https://declaraciones.sri.gob.ec/comprobantes-electronicos-consultas/pages/publico/ruc-clave-acceso.jspa?ruc=${item.rucProveedor}&claveAcceso=${item.numeroAutorizacion}`} target="_blank" rel="noopener noreferrer">
+            <a href="https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/publico/validezComprobantes.jsf?pathMPT=Facturaci%F3n%20Electr%F3nica&actualMPT=Validez%20de%20comprobantes" target="_blank" rel="noopener noreferrer">
                 <Button size="sm" variant="outline">
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Verificar en SRI
@@ -344,7 +344,7 @@ Agradecemos su pronta gestión.
         <TableCell>{formatDate(item.createdAt)}</TableCell>
         <TableCell>{item.fechaEmision}</TableCell>
         <TableCell>
-            <a href={`https://declaraciones.sri.gob.ec/comprobantes-electronicos-consultas/pages/publico/ruc-clave-acceso.jspa?ruc=${item.rucProveedor}&claveAcceso=${item.numeroAutorizacion}`} target="_blank" rel="noopener noreferrer">
+            <a href="https://srienlinea.sri.gob.ec/comprobantes-electronicos-internet/publico/validezComprobantes.jsf?pathMPT=Facturaci%F3n%20Electr%F3nica&actualMPT=Validez%20de%20comprobantes" target="_blank" rel="noopener noreferrer">
                 <Button size="sm" variant="outline">
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Verificar en SRI
