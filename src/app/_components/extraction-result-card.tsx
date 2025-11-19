@@ -14,6 +14,7 @@ import { Copy, Mail, Check, Send } from "lucide-react";
 import { RetentionRecord } from "@/lib/types";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { getEmailByRuc } from "@/lib/provider-emails";
 
 
 interface ExtractionResultCardProps {
@@ -82,6 +83,7 @@ Saludos.
   };
 
   const handleRequestSriAcceptance = () => {
+    const providerEmail = getEmailByRuc(data.rucProveedor);
     const subject = `Solicitud de Anulación - ${data.numeroRetencion}`;
     const emailBody = `Estimados ${data.razonSocialProveedor},
 
@@ -95,7 +97,7 @@ ${formattedTextForEmail}
 Agradecemos su pronta gestión.
 `;
     const body = encodeURIComponent(emailBody);
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${providerEmail}?subject=${subject}&body=${body}`;
   };
 
   return (

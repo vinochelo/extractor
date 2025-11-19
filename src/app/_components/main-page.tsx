@@ -14,6 +14,7 @@ import {
 } from '@/firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import type { RetentionRecord } from '@/lib/types';
+import { EmailImporter } from './email-importer';
 
 export function MainPage() {
   const { user, isUserLoading } = useUser();
@@ -140,17 +141,21 @@ export function MainPage() {
         <RetentionHistoryTable key={historyKey} />
       </div>
 
-      <PdfUploader
-        file={file}
-        onFileChange={handleFileChange}
-        onFileRemove={handleRemoveFile}
-        onSubmit={handleSubmit}
-        loading={loading || isUserLoading}
-        error={error}
-        warning={duplicateWarning}
-      />
+      <div className="space-y-12">
+        <EmailImporter />
 
-      {extractedData && <ExtractionResultCard data={extractedData} />}
+        <PdfUploader
+          file={file}
+          onFileChange={handleFileChange}
+          onFileRemove={handleRemoveFile}
+          onSubmit={handleSubmit}
+          loading={loading || isUserLoading}
+          error={error}
+          warning={duplicateWarning}
+        />
+
+        {extractedData && <ExtractionResultCard data={extractedData} />}
+      </div>
     </main>
   );
 }

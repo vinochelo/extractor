@@ -45,6 +45,7 @@ import type { RetentionRecord, RetentionStatus } from '@/lib/types';
 import { StatusSelector } from './status-selector';
 import { StatusBadge } from './status-badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { getEmailByRuc } from '@/lib/provider-emails';
 
 // Helper to format keys for display
 const formatDisplayKey = (key: string): string => {
@@ -113,6 +114,7 @@ Saludos.
   };
 
   const handleRequestSriAcceptance = (data: RetentionRecord) => {
+    const providerEmail = getEmailByRuc(data.rucProveedor);
     const formattedTextForEmail = generateFormattedText(data);
     const subject = `Solicitud de Anulación - ${data.numeroRetencion}`;
     const emailBody = `Estimados ${data.razonSocialProveedor},
@@ -127,7 +129,7 @@ ${formattedTextForEmail}
 Agradecemos su pronta gestión.
 `;
     const body = encodeURIComponent(emailBody);
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${providerEmail}?subject=${subject}&body=${body}`;
   };
 
   const handleRevertStatus = (retention: RetentionRecord) => {
