@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useMemo, useState } from 'react';
 import { useUser, useCollection, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
@@ -117,7 +117,7 @@ ${formattedTextForEmail}
     const subject = `Anulación retención ${data.numeroRetencion}`;
     const emailBody = `Estimados ${data.razonSocialProveedor},
 
-Junto con saludar, les solicitamos por favor aceptar la anulación de la siguiente retención en el portal del SRI.
+Por medio de la presente, solicitamos su apoyo revisando en el portal del SRI la anulación correspondiente a la siguiente retención:
 
 Detalles de la retención:
 --------------------------------
