@@ -106,8 +106,6 @@ Detalles de la retención a anular:
 --------------------------------
 ${formattedTextForEmail}
 --------------------------------
-
-Saludos.
 `;
     const body = encodeURIComponent(emailBody);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
