@@ -93,8 +93,6 @@ ${formattedTextForEmail}
 --------------------------------
 
 Agradecemos su pronta gestión.
-
-Saludos cordiales.
 `;
     const body = encodeURIComponent(emailBody);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
