@@ -96,7 +96,7 @@ export function RetentionHistoryTable() {
 
   const handleShareForVoiding = (data: RetentionRecord) => {
     const formattedTextForEmail = generateFormattedText(data);
-    const subject = "Anulación retención.";
+    const subject = `Solicitud de Anulación - ${data.numeroRetencion}`;
     const emailBody = `Buenos días,
 
 Favor su ayuda anulando la retención adjunta.

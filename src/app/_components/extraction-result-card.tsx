@@ -65,7 +65,7 @@ ${formattedTextForEmail}
   };
 
   const handleShareForVoiding = () => {
-    const subject = "Anulación retención.";
+    const subject = `Solicitud de Anulación - ${data.numeroRetencion}`;
     const emailBody = `Buenos días,
 
 Favor su ayuda anulando la retención adjunta.
